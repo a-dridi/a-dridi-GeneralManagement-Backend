@@ -1,0 +1,41 @@
+## Eureka gateway client settings
+spring.profiles.active=${SPR_PROFILE:native}
+server.port=8760
+spring.application.name=gm-gateway-service
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+
+#Access all modules (services/REST apis) through the paths defined below 
+zuul.ignored-services=*
+hystrix.command.default.execution.timeout.enabled: false
+
+# No stripping of URI prefix. Needed for JWT authentication
+zuul.routes.gm-gateway-service.strip-prefix=true
+zuul.routes.gm-gateway-service.sensitive-headers=Cookie,Set-Cookie 
+
+zuul.routes.common-service.path=/api/common/**
+zuul.routes.common-service.service-id=common-service
+
+zuul.routes.budgeting-service.path=/api/budgeting/**
+zuul.routes.budgeting-service.service-id=budgeting-service
+
+
+## default connection pool
+spring.datasource.hikari.connectionTimeout=20000
+spring.datasource.hikari.maximumPoolSize=5
+
+## PostgreSQL
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/generalmanagement
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
+
+#drop and create table again, good for testing, comment this in production - Or use "update" in production. 
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+#Date ISO format 
+spring.jackson.date-format=YYYY-MM-dd'T'HH:mm:ss.SSS'Z'
