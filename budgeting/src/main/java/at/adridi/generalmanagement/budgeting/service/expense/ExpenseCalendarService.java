@@ -33,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author A.Dridi
  */
 @Service
-@Transactional
 @NoArgsConstructor
 public class ExpenseCalendarService {
 
@@ -51,7 +50,6 @@ public class ExpenseCalendarService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseCalendar> getExpensesCalendarData(int userId) {
         List<Expense> allExpenses = this.expenseRepository.getAllExpenseList(userId).orElseThrow(() -> new DataValueNotFoundException("Expense Category Does Not Exist"));
         List<ExpenseCalendar> expenseCalendarList = new ArrayList<>();
@@ -130,15 +128,14 @@ public class ExpenseCalendarService {
                 //Recreate a list of expense calendar for all days of current month
                 int daysInCurrentMonth = (YearMonth.of(currentYear, currentMonth)).lengthOfMonth();
                  {
-                    Date adjustedPaymentDate = new Date();
                     for (int i = 1; i <= daysInCurrentMonth; i++) {
                         try {
-                            adjustedPaymentDate = dateFormat.parse((new StringBuilder(i).append(".").append(currentMonth).append(".").append(currentYear)).toString());
+                            LocalDate adjustedPaymentDate = LocalDate.of(currentYear, currentMonth, i);
+                            adjustedExpenseCalendarList.add(new ExpenseCalendar(this.expenseCalendarCounter++, expenseCalendarTitle, adjustedPaymentDate.toString(), ExpenseTimerangeShortcuts.DAILY_BG_COLOR, ExpenseTimerangeShortcuts.DAILY_TXT_COLOR));
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             return new ArrayList<ExpenseCalendar>();
                         }
-                        adjustedExpenseCalendarList.add(new ExpenseCalendar(this.expenseCalendarCounter++, expenseCalendarTitle, adjustedPaymentDate.toString(), ExpenseTimerangeShortcuts.DAILY_BG_COLOR, ExpenseTimerangeShortcuts.DAILY_TXT_COLOR));
                     }
                     return adjustedExpenseCalendarList;
                 }
@@ -169,13 +166,6 @@ public class ExpenseCalendarService {
                 return adjustedExpenseCalendarList;
             }
             case 5: {
-                System.out.println("date year");
-                System.out.println(currentYear);
-                System.out.println("date month");
-                System.out.println(currentMonth);
-                System.out.println("date day");
-                System.out.println(dayOfPaymentDate);
-
                 LocalDate adjustedPaymentDate = LocalDate.of(currentYear, currentMonth, dayOfPaymentDate);
 
                 adjustedExpenseCalendarList.add(new ExpenseCalendar(this.expenseCalendarCounter++, expenseCalendarTitle, adjustedPaymentDate.toString(), ExpenseTimerangeShortcuts.MONTHLY_BG_COLOR, ExpenseTimerangeShortcuts.MONTHLY_TXT_COLOR));

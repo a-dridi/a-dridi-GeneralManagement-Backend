@@ -6,9 +6,10 @@
 package at.adridi.generalmanagement.common.controller;
 
 import at.adridi.generalmanagement.common.exceptions.DataValueNotFoundException;
+import at.adridi.generalmanagement.common.model.AppDatabaseNote;
+import at.adridi.generalmanagement.common.model.ResponseMessage;
 import at.adridi.generalmanagement.common.service.DatabaseNoteService;
 import at.adridi.generalmanagement.common.util.ApiEndpoints;
-import at.adridi.generalmanagement.model.AppDatabaseNote;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * API Endpoints for note data of every table (expenses, earnings, etc.)
+ *
  * @author A.Dridi
  */
 @RestController
@@ -68,7 +70,7 @@ public class DatabaseNoteController {
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_DATABASENOTE + "/add")
-    public ResponseEntity<String> addDatabaseNote(@RequestBody String newDatabaseNoteJson) {
+    public ResponseEntity<ResponseMessage> addDatabaseNote(@RequestBody String newDatabaseNoteJson) {
         ObjectMapper objectMapper = new ObjectMapper();
         AppDatabaseNote newDatabaseNote;
         int resultCode;
@@ -82,21 +84,20 @@ public class DatabaseNoteController {
 
         switch (resultCode) {
             case 0:
-                return ResponseEntity.ok("OK. Database Note was added successfully.");
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Database Note was added successfully."));
             case 1:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Database Note cannot be null!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Database Note cannot be null!"));
             case 2:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Database Note could not be saved!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Database Note could not be saved!"));
             case 4:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("ERROR. The JSON object string could not be processed.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. The JSON object string could not be processed!"));
             default:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Database Note could not be saved!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Database Note could not be saved!"));
         }
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_DATABASENOTE + "/update")
-    public ResponseEntity<String> updateDatabaseNote(@RequestBody String updatedDatabaseNoteJson) {
+    public ResponseEntity<ResponseMessage> updateDatabaseNote(@RequestBody String updatedDatabaseNoteJson) {
         ObjectMapper objectMapper = new ObjectMapper();
         AppDatabaseNote updatedDatabaseNote;
         try {
@@ -104,24 +105,24 @@ public class DatabaseNoteController {
             int resultCode = this.databaseNoteService.save(updatedDatabaseNote);
             switch (resultCode) {
                 case 0:
-                    return ResponseEntity.ok("OK. Update was successful.");
+                    return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Database Note update was successful."));
                 case 1:
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Database Note cannot be null!");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Database Note cannot be null!"));
                 default:
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Update failed!");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Update failed!"));
             }
         } catch (IOException ex) {
             Logger.getLogger(DatabaseNoteController.class.getName()).log(Level.SEVERE, null, ex);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Please check the passed JSON object!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Please check the passed JSON object!"));
         }
     }
 
     @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_DATABASENOTE + "/delete/{id}")
-    public ResponseEntity<String> deleteDatabaseNote(@PathVariable Long databaseNoteId) {
+    public ResponseEntity<ResponseMessage> deleteDatabaseNote(@PathVariable Long databaseNoteId) {
         if (this.databaseNoteService.deleteById(databaseNoteId)) {
-            return ResponseEntity.ok("Your Database Note was deleted successfully.");
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Your Database Note was deleted successfully."));
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error. Database Note does not exists!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Database Note does not exists!"));
         }
     }
 }

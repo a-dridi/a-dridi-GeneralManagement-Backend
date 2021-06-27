@@ -24,7 +24,7 @@ Description: Main public entry point. All API requests are done on this applicat
 ### common (Eureka Client)
 Name: common-service
 Database: gm_common
-Description: Notes for all tables, Application settings, other saved tables data that do not belong to a certain data table group (e.g.: organization , trade).
+Description: Notes for all tables, Application settings, other saved tables data that do not belong to a certain data table group (e.g.: Books, Organization , Trade).
 
 
 ### budgeting (Eureka Client)
@@ -35,7 +35,7 @@ Description: Expenses, earnings and their sub tables.
 ### media (Eureka Client)
 Name: media-service
 Database gm_media
-Description: Books, Videos, Videoclips, Music, Software and their sub tables. 
+Description: Videos, Videoclips, Music, Software and their sub tables. 
 
 ### financial (Eureka Client)
 Name: financial-service

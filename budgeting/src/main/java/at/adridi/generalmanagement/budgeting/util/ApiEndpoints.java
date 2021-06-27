@@ -19,5 +19,12 @@ public class ApiEndpoints {
     public static final String API_RESTRICTED_DATABASE_EXPENSEBUDGET = "/data/expensebudget";
     public static final String API_RESTRICTED_DATABASE_EXPENSEGRAPH = "/data/expensegraph";
     public static final String API_RESTRICTED_DATABASE_EXPENSECALENDAR = "/data/expensecalendar";
+    public static final String API_RESTRICTED_DATABASE_EXPENSEDEVELOPMENT = "/data/expensedevelopment";
+
+    public static final String API_RESTRICTED_DATABASE_EARNING = "/data/earning";
+    public static final String API_RESTRICTED_DATABASE_EARNINGCATEGORY = "/data/earningcategory";
+    public static final String API_RESTRICTED_DATABASE_EARNINGTIMERANGE = "/data/earningtimerange";
+    public static final String API_RESTRICTED_DATABASE_EARNINGGRAPH = "/data/earninggraph";
+    public static final String API_RESTRICTED_DATABASE_EARNINGDEVELOPMENT = "/data/earningdevelopment";
 
 }

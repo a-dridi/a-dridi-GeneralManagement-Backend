@@ -6,13 +6,13 @@
 package at.adridi.generalmanagement.common.service;
 
 import at.adridi.generalmanagement.common.exceptions.DataValueNotFoundException;
-import at.adridi.generalmanagement.model.AppDatabaseNote;
+import at.adridi.generalmanagement.common.model.AppDatabaseNote;
+import at.adridi.generalmanagement.common.repository.AppDatabaseNoteRepository;
 import java.util.List;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import at.adridi.generalmanagement.repository.AppDatabaseNoteRepository;
 
 /**
  * Implementation of expense DAO
@@ -54,7 +54,7 @@ public class DatabaseNoteService {
      */
     @Transactional(readOnly = true)
     public AppDatabaseNote getDatabaseNoteByTable(String tablename, Integer userId) {
-        return this.databaseNoteRepository.findByTableAndUserId(tablename, userId)
+        return this.databaseNoteRepository.findByAppTableAndUserId(tablename, userId)
                 .orElseThrow(() -> new DataValueNotFoundException("Datbase Note with the table name " + tablename + " Does Not Exist"));
     }
 

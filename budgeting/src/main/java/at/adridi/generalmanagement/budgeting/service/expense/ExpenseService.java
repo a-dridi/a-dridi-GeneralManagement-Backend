@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author A.Dridi
  */
 @Service
-@Transactional
 @NoArgsConstructor
 public class ExpenseService {
 
@@ -36,6 +35,8 @@ public class ExpenseService {
     private ExpenseRepository expenseRepository;
     @Autowired
     private ExpenseCategoryService expenseCategoryService;
+    @Autowired
+    private ExpenseBudgetService expenseBudgetService;
 
     /**
      * Save new expense.
@@ -43,6 +44,7 @@ public class ExpenseService {
      * @param newExpense
      * @return saved expense object. Null if not successful.
      */
+    @Transactional
     public Expense save(Expense newExpense) {
         if (newExpense == null) {
             return null;
@@ -58,10 +60,8 @@ public class ExpenseService {
      * @param id
      * @return
      */
-    @Transactional(readOnly = true)
     public Expense getExpenseById(Long id) {
-        return this.expenseRepository.findByExpenseId(id)
-                .orElseThrow(() -> new DataValueNotFoundException("Expense Does Not Exist"));
+        return this.expenseRepository.findByExpenseId(id).orElseThrow(() -> new DataValueNotFoundException("Expense Does Not Exist"));
     }
 
     /**
@@ -72,7 +72,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<Expense> getExpenseByTitle(String title, int userId) {
         return this.expenseRepository.findByTitleAndUserId(title, userId)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Does Not Exist"));
@@ -86,7 +85,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ArrayList<Expense> getExpensesByCategoryAndUserId(ExpenseCategory expenseCategory, int userId) {
         return this.expenseRepository.findByExpenseCategoryAndUserId(expenseCategory, userId)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Does Not Exist"));
@@ -100,7 +98,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ArrayList<Expense> getExpensesByExpenseTimerangeAndUserId(ExpenseTimerange expenseTimerange, int userId) {
         return this.expenseRepository.findByExpenseTimerangeAndUserId(expenseTimerange, userId)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Does Not Exist"));
@@ -112,7 +109,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<Expense> getAllExpense(int userId) {
         return this.expenseRepository.getAllExpenseList(userId).orElseThrow(() -> new DataValueNotFoundException("User " + userId + " does Not have expenses or does not exist"));
     }
@@ -126,7 +122,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<Expense> getExpensesByMonthYear(int month, int year, int userId) {
         return this.expenseRepository.getExpensesOfCertainMonthYear(month, year, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses could not be load for the passed arguments!"));
     }
@@ -139,7 +134,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<Expense> getExpensesByYear(int year, int userId) {
         return this.expenseRepository.getExpensesOfCertainYear(year, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses could not be load for the passed arguments!"));
     }
@@ -150,12 +144,17 @@ public class ExpenseService {
      * @param expenseId
      * @return true if successful
      */
+    @Transactional
     public boolean deleteById(Long expenseId) {
         if (expenseId == null || expenseId == 0) {
             return false;
         }
+        Expense expense = null;
+        try {
+            expense = this.getExpenseById(expenseId);
+        } catch (DataValueNotFoundException e) {
+        }
 
-        Expense expense = this.getExpenseById(expenseId);
         if (expense != null) {
             expense.setDeleted(true);
             try {
@@ -173,20 +172,34 @@ public class ExpenseService {
     }
 
     /**
-     * Get single and custom expense of a certain month calculated.
+     * Get sum of single and custom expense of a certain month calculated.
      * DataValueNotFoundException if it is not available.
      *
-     * @param expenseTimerange
      * @param month Month number 1-12
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
-    public Integer getSingleAndCustomExpensesByCertainMonth(int month, int userId) {
+    public Integer getSumOfSingleAndCustomExpensesByCertainMonth(int month, int userId) {
         Integer expensesOfCertainMonth = this.getMonthlyRecurringExpensesSum(userId);
-        expensesOfCertainMonth += this.expenseRepository.getSumByCertainTimerangeAndCertainMonth(1, month, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses of month" + month + " could not be loaded"));
-        expensesOfCertainMonth += this.expenseRepository.getSumByCertainTimerangeAndCertainMonth(12, month, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses of month" + month + " could not be loaded"));
+        expensesOfCertainMonth += this.expenseRepository.getSumByCertainTimerangeAndCertainMonth(1, month, userId).orElse(0);
+        expensesOfCertainMonth += this.expenseRepository.getSumByCertainTimerangeAndCertainMonth(12, month, userId).orElse(0);
         return expensesOfCertainMonth;
+    }
+
+    /**
+     * Get sum of single and custom expense of a certain month and year
+     * calculated. DataValueNotFoundException if it is not available.
+     *
+     * @param month 
+     * @param year year number example: 1990
+     * @param userId
+     * @return
+     */
+    public Integer getSumOfSingleAndCustomExpensesByCertainMonthYear(int month, int year, int userId) {
+        Integer expensesOfCertainYear = this.getMonthlyRecurringExpensesSum(userId);
+        expensesOfCertainYear += this.expenseRepository.getSumByCertainTimerangeAndCertainMonthYear(1, month, year, userId).orElse(0);
+        expensesOfCertainYear += this.expenseRepository.getSumByCertainTimerangeAndCertainMonthYear(12, month, year, userId).orElse(0);
+        return expensesOfCertainYear;
     }
 
     /**
@@ -197,7 +210,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ArrayList<Expense> getExpensesOfCertainYear(int year, int userId) {
         return this.expenseRepository.getExpensesOfCertainYear(year, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses of year" + year + " could not be loaded"));
     }
@@ -207,6 +219,7 @@ public class ExpenseService {
      *
      * @param expenseId
      */
+    @Transactional
     public void restoreDeletedExpense(int expenseId) {
         this.expenseRepository.restoreDeletedExpense(expenseId);
     }
@@ -219,31 +232,31 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ArrayList<Expense> getExpenseByExpenseCategoryId(int expenseCategoryId, int userId) {
-        return this.expenseRepository.getExpensesByExpenseCategoryId(expenseCategoryId, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses with the category id " + userId + " could not be loaded"));
+        return this.expenseRepository.getExpensesByExpenseCategoryId(expenseCategoryId, userId).orElseThrow(() -> new DataValueNotFoundException("Expenses with the category id " + expenseCategoryId + " could not be loaded"));
     }
 
     /**
      * Update expense categories of all expenses with oldExpenseCategoryId and
      * userId to the new expense category id. And delete old expense category
-     * object.
+     * object and remove it from expense budget table.
      *
      * @param oldExpenseCategoryId
      * @param newExpenseCategoryId
      * @param userId
-     * @return ß if successful. -1 if unsucessful.
+     * @return 0 if successful. -1 if unsucessful.
      */
-    public int updateExpensesExpenseCategoryId(int oldExpenseCategoryId, int newExpenseCategoryId, int userId) {
-
+    @Transactional
+    public int updateExpensesExpenseCategoryId(long oldExpenseCategoryId, long newExpenseCategoryId, int userId) {
         if ((oldExpenseCategoryId > 0 && newExpenseCategoryId > 0 && userId > 0)) {
-            ExpenseCategory oldExpenseCategory = this.expenseCategoryService.getExpenseCategoryById((long) oldExpenseCategoryId);
-            ExpenseCategory newExpenseCategory = this.expenseCategoryService.getExpenseCategoryById((long) newExpenseCategoryId);
+            ExpenseCategory oldExpenseCategory = this.expenseCategoryService.getExpenseCategoryById(oldExpenseCategoryId);
+            ExpenseCategory newExpenseCategory = this.expenseCategoryService.getExpenseCategoryById(newExpenseCategoryId);
 
             if ((oldExpenseCategory != null && !oldExpenseCategory.getCategoryTitle().equals("")) && (newExpenseCategory != null && !newExpenseCategory.getCategoryTitle().equals(""))) {
                 try {
-                    this.expenseRepository.updateExpensesCategory(oldExpenseCategoryId, newExpenseCategoryId, userId);
-                    this.expenseCategoryService.deleteById((long) newExpenseCategoryId);
+                    this.expenseRepository.updateCategoryOfAllExpenses(newExpenseCategoryId, oldExpenseCategoryId, userId);
+                    this.expenseCategoryService.deleteById(oldExpenseCategoryId);
+                    this.expenseBudgetService.deleteByExpenseCategory(oldExpenseCategory, userId);
                     return 0;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -255,7 +268,6 @@ public class ExpenseService {
         } else {
             return -1;
         }
-
     }
 
     /**
@@ -271,10 +283,10 @@ public class ExpenseService {
      * @param userId
      * @return
      */
+    @Transactional
     public int updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, Date paymentDate, String information, Long expenseId, int userId) {
         try {
             this.expenseRepository.updateExpenseTableData(title, expenseCategoryId, centValue, timerangeId, paymentDate.toString(), information, expenseId, userId);
-
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -289,7 +301,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseGraph> getMonthlySumExpenses(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -322,7 +333,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseGraph> getYearlySumExpenses(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -356,7 +366,6 @@ public class ExpenseService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseGraph> getSumExpensesOfCurrentYear(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -365,7 +374,7 @@ public class ExpenseService {
                 int currentYearSum = 0;
                 SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
                 int currentYear = Integer.parseInt(yearFormat.format(Calendar.getInstance().getTime()));
-                currentYearSum += this.expenseRepository.getSumSingleExpensesByYear(currentYear, userId);
+                currentYearSum += this.expenseRepository.getSumSingleExpensesByYear(currentYear, userId).orElse(0);
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 365;
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 52;
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 26;
@@ -386,13 +395,12 @@ public class ExpenseService {
     }
 
     /**
-     * Get monthly expenses and other recurring expenses calculated down to a
-     * monthly rate. 0 if it is not available.
+     * Get sum of monthly expenses and other recurring expenses calculated down
+     * to a monthly rate. 0 if it is not available.
      *
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public int getMonthlyRecurringExpensesSum(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -417,13 +425,12 @@ public class ExpenseService {
     }
 
     /**
-     * Get yearly expenses and other recurring expenses calculated down to a
-     * yearly rate. 0 if it is not available.
+     * Get sum of yearly expenses and other recurring expenses calculated down
+     * to a yearly rate. 0 if it is not available.
      *
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public int getYearlyRecurringExpensesSum(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -448,12 +455,12 @@ public class ExpenseService {
     }
 
     /**
-     * Get sum of current expenses this month. 0 if it is not available.
+     * Get sum of current expenses this month. All recurring expenses counted to
+     * a monthly basis. Single expenses of the current month are added as well.
      *
      * @param userId
-     * @return
+     * @return 0 if it is not available.
      */
-    @Transactional(readOnly = true)
     public int getCurrentMonthExpenses(int userId) {
         try {
             List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
@@ -461,7 +468,7 @@ public class ExpenseService {
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
                 int currentMonth = Integer.parseInt(monthFormat.format(Calendar.getInstance().getTime()));
-                currentMonthSum += this.expenseRepository.getSumSingleExpensesByMonth(currentMonth, userId);
+                currentMonthSum += this.expenseRepository.getSumSingleExpensesByMonth(currentMonth, userId).orElse(0);
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 30;
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 4;
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 2;
@@ -479,4 +486,38 @@ public class ExpenseService {
             return 0;
         }
     }
+
+    /**
+     * Get sum of current expenses this month of an expense category id. All
+     * recurring expenses counted to a monthly basis. Single expenses of the
+     * current month are added as well.
+     *
+     * @param long earningCategoryId
+     * @param userId
+     * @return 0 if it is not available.
+     */
+    public int getCurrentMonthExpensesOfExpenseCategory(long expenseCategoryId, int userId) {
+        try {
+            int currentMonthSum = 0;
+            SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
+            int currentMonth = Integer.parseInt(monthFormat.format(Calendar.getInstance().getTime()));
+            currentMonthSum += this.expenseRepository.getSumByCertainTimerangeAndCategoryAndCertainMonth(1L, expenseCategoryId, currentMonth, userId).orElse(0);
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategoryId).orElse(0) * 30;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategoryId).orElse(0) * 4;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategoryId).orElse(0) * 2;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(5L, userId, expenseCategoryId).orElse(0);
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(6L, userId, expenseCategoryId).orElse(0) / 2;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(7L, userId, expenseCategoryId).orElse(0) / 4;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(8L, userId, expenseCategoryId).orElse(0) / 6;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(9L, userId, expenseCategoryId).orElse(0) / 12;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(10L, userId, expenseCategoryId).orElse(0) / 24;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(11L, userId, expenseCategoryId).orElse(0) / 60;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(12L, userId, expenseCategoryId).orElse(0);
+            return currentMonthSum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
 }

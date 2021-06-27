@@ -21,6 +21,11 @@ zuul.routes.common-service.service-id=common-service
 zuul.routes.budgeting-service.path=/api/budgeting/**
 zuul.routes.budgeting-service.service-id=budgeting-service
 
+zuul.routes.financial-service.path=/api/financial/**
+zuul.routes.financial-service.service-id=financial-service
+
+zuul.routes.financial-service.path=/api/media/**
+zuul.routes.financial-service.service-id=media-service
 
 ## default connection pool
 spring.datasource.hikari.connectionTimeout=20000
@@ -34,7 +39,7 @@ spring.datasource.username=YOUR_USERNAME
 spring.datasource.password=YOUR_PASSWORD
 
 #drop and create table again, good for testing, comment this in production - Or use "update" in production. 
-spring.jpa.hibernate.ddl-auto=create
+spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 
 #Date ISO format 

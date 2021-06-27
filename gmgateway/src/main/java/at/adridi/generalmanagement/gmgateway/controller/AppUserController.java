@@ -7,7 +7,9 @@ package at.adridi.generalmanagement.gmgateway.controller;
 
 import at.adridi.generalmanagement.gmgateway.model.AppUser;
 import at.adridi.generalmanagement.gmgateway.model.LoginUser;
+import at.adridi.generalmanagement.gmgateway.model.ResponseMessage;
 import at.adridi.generalmanagement.gmgateway.service.UserService;
+import at.adridi.generalmanagement.gmgateway.service.UserSettingsService;
 import at.adridi.generalmanagement.gmgateway.util.ApiEndpoints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import static org.springframework.http.ResponseEntity.status;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,6 +45,8 @@ public class AppUserController {
     @Autowired
     private UserService userService;
     @Autowired
+    private UserSettingsService userSettingsService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping(ApiEndpoints.API_PUBLIC_REGISTRATION)
@@ -53,6 +58,7 @@ public class AppUserController {
             newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
             AppUser savedUser = this.userService.save(newUser);
             if (savedUser != null) {
+                this.userSettingsService.createDefaultUserSettings(savedUser.getUserId());
                 return ResponseEntity.ok(savedUser.getEmail());
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR. Registration failed!");
@@ -60,6 +66,27 @@ public class AppUserController {
         } catch (IOException e) {
             e.printStackTrace();
             return status(HttpStatus.BAD_REQUEST).body("ERROR! User could not be registered! Please check the passed JSON.");
+        }
+    }
+
+    /**
+     * Get user email by user id
+     *
+     * @param userLoginCredentialsJson
+     * @return
+     */
+    @GetMapping("/api/getUserEmail/{userId}")
+    public ResponseEntity<ResponseMessage> getUserId(@PathVariable Integer userId) {
+        try {
+            AppUser savedUser = this.userService.getUserByUserId(userId);
+            if (savedUser != null) {
+                return ResponseEntity.ok(new ResponseMessage(savedUser.getEmail()));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage(""));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return status(HttpStatus.BAD_GATEWAY).body(new ResponseMessage(""));
         }
     }
 
@@ -107,7 +134,7 @@ public class AppUserController {
         }
     }
 
-    @DeleteMapping(ApiEndpoints.API_RESTRICTED_SETTINGS_USER + "/delete/{id}")
+    @DeleteMapping(ApiEndpoints.API_RESTRICTED_SETTINGS_USER + "/delete/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
         if (this.userService.deleteById(userId)) {
             return ResponseEntity.ok("Your User was deleted successfully.");

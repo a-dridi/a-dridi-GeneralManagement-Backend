@@ -44,8 +44,12 @@ public class ExpenseBudgetController {
     private ExpenseBudgetService expenseBudgetService;
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEBUDGET + "/all/{userId}")
-    public ResponseEntity<List<ExpenseBudget>> getAllExpenseBudget(int userId) {
-        List<ExpenseBudget> expenseBudgetList = this.expenseBudgetService.getAllExpenseBudget(userId);
+    public ResponseEntity<List<ExpenseBudget>> getAllExpenseBudget(@PathVariable int userId) {
+        List<ExpenseBudget> expenseBudgetList = new ArrayList<>();
+        try {
+            expenseBudgetList = this.expenseBudgetService.getAllExpenseBudget(userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseBudgetList)) {
             return status(HttpStatus.OK).body(expenseBudgetList);
         } else {
@@ -62,10 +66,9 @@ public class ExpenseBudgetController {
         }
     }
 
-    
-        @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEBUDGET + "/add")
+    @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEBUDGET + "/add")
     public ResponseEntity<ExpenseBudget> addExpenseBudget(@RequestBody String newExpenseBudgetJson) {
-               ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm a z"));
         ExpenseBudget newExpenseBudget;
         ExpenseBudget savedExpenseBudget;
@@ -86,6 +89,7 @@ public class ExpenseBudgetController {
         ExpenseBudget savedExpenseBudget;
         try {
             updatedExpenseBudget = objectMapper.readValue(updatedExpenseBudgetJson, ExpenseBudget.class);
+            System.out.println("updateExpenseBudget UPDATE!!");
             savedExpenseBudget = this.expenseBudgetService.save(updatedExpenseBudget);
             return ResponseEntity.status(HttpStatus.OK).body(savedExpenseBudget);
         } catch (IOException ex) {

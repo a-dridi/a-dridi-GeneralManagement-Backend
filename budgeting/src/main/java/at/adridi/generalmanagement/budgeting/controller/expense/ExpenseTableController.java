@@ -10,6 +10,8 @@ import at.adridi.generalmanagement.budgeting.model.ResponseMessage;
 import at.adridi.generalmanagement.budgeting.model.expense.Expense;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseCategory;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseTimerange;
+import at.adridi.generalmanagement.budgeting.service.expense.ExpenseBudgetService;
+import at.adridi.generalmanagement.budgeting.service.expense.ExpenseDevelopmentService;
 import at.adridi.generalmanagement.budgeting.service.expense.ExpenseService;
 import at.adridi.generalmanagement.budgeting.util.ApiEndpoints;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,10 +45,19 @@ public class ExpenseTableController {
 
     @Autowired
     private ExpenseService expenseService;
+    @Autowired
+    private ExpenseBudgetService expenseBudgetService;
+    @Autowired
+    private ExpenseDevelopmentService expenseDevelopmentService;
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/all/{userId}")
     public ResponseEntity<List<Expense>> getAllExpense(@PathVariable int userId) {
-        List<Expense> expenseList = this.expenseService.getAllExpense(userId);
+        List<Expense> expenseList = new ArrayList<>();
+        try {
+            expenseList = this.expenseService.getAllExpense(userId);
+            this.expenseDevelopmentService.checkAndUpdate(userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseList)) {
             return status(HttpStatus.OK).body(expenseList);
         } else {
@@ -56,7 +67,11 @@ public class ExpenseTableController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/certainYear/{year}/{userId}")
     public ResponseEntity<List<Expense>> getExpensesOfCertainYear(@PathVariable int year, @PathVariable int userId) {
-        List<Expense> expenseList = this.expenseService.getExpensesOfCertainYear(year, userId);
+        List<Expense> expenseList = new ArrayList<>();
+        try {
+            expenseList = this.expenseService.getExpensesOfCertainYear(year, userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseList)) {
             return status(HttpStatus.OK).body(expenseList);
         } else {
@@ -66,7 +81,11 @@ public class ExpenseTableController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/certainMonthYear/{month}/{year}/{userId}")
     public ResponseEntity<List<Expense>> getExpensesOfCertainMonthYear(@PathVariable int month, @PathVariable int year, @PathVariable int userId) {
-        List<Expense> expenseList = this.expenseService.getExpensesByMonthYear(month, year, userId);
+        List<Expense> expenseList = new ArrayList<>();
+        try {
+            expenseList = this.expenseService.getExpensesByMonthYear(month, year, userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseList)) {
             return status(HttpStatus.OK).body(expenseList);
         } else {
@@ -85,7 +104,11 @@ public class ExpenseTableController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/get/byTitle/{title}/{userId}")
     public ResponseEntity<List<Expense>> getAllExpenseByTitle(@PathVariable String title, @PathVariable int userId) {
-        List<Expense> expenseList = this.expenseService.getExpenseByTitle(title, userId);
+        List<Expense> expenseList = new ArrayList<>();
+        try {
+            expenseList = this.expenseService.getExpenseByTitle(title, userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseList)) {
             return status(HttpStatus.OK).body(expenseList);
         } else {
@@ -99,7 +122,11 @@ public class ExpenseTableController {
         ExpenseCategory expenseCategory;
         try {
             expenseCategory = objectMapper.readValue(expenseCategoryJson, ExpenseCategory.class);
-            List<Expense> expenseList = this.expenseService.getExpensesByCategoryAndUserId(expenseCategory, userId);
+            List<Expense> expenseList = new ArrayList<>();
+            try {
+                expenseList = this.expenseService.getExpensesByCategoryAndUserId(expenseCategory, userId);
+            } catch (DataValueNotFoundException e) {
+            }
             if (!CollectionUtils.isEmpty(expenseList)) {
                 return status(HttpStatus.OK).body(expenseList);
             } else {
@@ -117,7 +144,11 @@ public class ExpenseTableController {
         ExpenseTimerange expenseTimerange;
         try {
             expenseTimerange = objectMapper.readValue(expenseTimerangeJson, ExpenseTimerange.class);
-            List<Expense> expenseList = this.expenseService.getExpensesByExpenseTimerangeAndUserId(expenseTimerange, userId);
+            List<Expense> expenseList = new ArrayList<>();
+            try {
+                expenseList = this.expenseService.getExpensesByExpenseTimerangeAndUserId(expenseTimerange, userId);
+            } catch (DataValueNotFoundException e) {
+            }
             if (!CollectionUtils.isEmpty(expenseList)) {
                 return status(HttpStatus.OK).body(expenseList);
             } else {
@@ -138,6 +169,11 @@ public class ExpenseTableController {
         try {
             newExpense = objectMapper.readValue(newExpenseJson, Expense.class);
             savedExpense = this.expenseService.save(newExpense);
+            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(savedExpense);
+
+            if (!this.expenseDevelopmentService.checkAndUpdate(savedExpense.getUserId())) {
+                this.expenseDevelopmentService.addExpenseDevelopmentOfCurrentMonthYear(savedExpense.getCentValue(), savedExpense.getExpenseTimerange().getTimerangeId(), savedExpense.getUserId());
+            }
             return ResponseEntity.status(HttpStatus.OK).body(savedExpense);
         } catch (IOException ex) {
             Logger.getLogger(ExpenseTableController.class.getName()).log(Level.SEVERE, null, ex);
@@ -148,11 +184,16 @@ public class ExpenseTableController {
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/update")
     public ResponseEntity<Expense> updateExpense(@RequestBody String updatedExpenseJson) {
         ObjectMapper objectMapper = new ObjectMapper();
+        Expense oldExpense;
         Expense updatedExpense;
         Expense savedExpense;
         try {
             updatedExpense = objectMapper.readValue(updatedExpenseJson, Expense.class);
+            oldExpense = this.expenseService.getExpenseById(updatedExpense.getExpenseId());
             savedExpense = this.expenseService.save(updatedExpense);
+            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(savedExpense);
+            this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
+            this.expenseDevelopmentService.updateExpenseDevelopmentOfCurrentMonthYear(oldExpense.getCentValue(), savedExpense.getCentValue(), savedExpense.getExpenseTimerange().getTimerangeId(), savedExpense.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(savedExpense);
         } catch (IOException ex) {
             Logger.getLogger(ExpenseTableController.class.getName()).log(Level.SEVERE, null, ex);
@@ -164,10 +205,24 @@ public class ExpenseTableController {
     public ResponseEntity<ResponseMessage> updateExpenseTableData(@RequestBody String updatedExpenseJson) {
         ObjectMapper objectMapper = new ObjectMapper();
         Expense updatedExpense;
+
         try {
             updatedExpense = objectMapper.readValue(updatedExpenseJson, Expense.class);
-            this.expenseService.updateExpenseTableData(updatedExpense.getTitle(), updatedExpense.getExpenseCategory().getExpenseCategoryId(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getPaymentDate(), updatedExpense.getInformation(), updatedExpense.getExpenseId(), updatedExpense.getUserId());
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Expense updated."));
+            Expense oldExpense = this.expenseService.getExpenseById(updatedExpense.getExpenseId());
+            this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
+
+            if (this.expenseService.updateExpenseTableData(updatedExpense.getTitle(), updatedExpense.getExpenseCategory().getExpenseCategoryId(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getPaymentDate(), updatedExpense.getInformation(), updatedExpense.getExpenseId(), updatedExpense.getUserId()) != -1) {
+                if (oldExpense.getExpenseTimerange().getTimerangeId().equals(updatedExpense.getExpenseTimerange().getTimerangeId())) {
+                    this.expenseDevelopmentService.updateExpenseDevelopmentOfCurrentMonthYear(oldExpense.getCentValue(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), oldExpense.getUserId());
+                } else {
+                    //Timerange was changed - Change calculation method in expense development
+                    this.expenseDevelopmentService.deleteExpenseDevelopmentOfCurrentMonthYear(oldExpense.getCentValue(), oldExpense.getExpenseTimerange().getTimerangeId(), oldExpense.getUserId());
+                    this.expenseDevelopmentService.addExpenseDevelopmentOfCurrentMonthYear(updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getUserId());
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Expense updated."));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Expense could not be updated!"));
+            }
         } catch (Exception ex) {
             Logger.getLogger(ExpenseTableController.class.getName()).log(Level.SEVERE, null, ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Expense could not be updated!"));
@@ -176,8 +231,7 @@ public class ExpenseTableController {
     }
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/updateExpenseCategories/{oldExpenseCategoryId}/{newExpenseCategoryId}/{userId}")
-    public ResponseEntity<ResponseMessage> updateExpenseCategories(@PathVariable int oldExpenseCategoryId, @PathVariable int newExpenseCategoryId, @PathVariable int userId) {
-
+    public ResponseEntity<ResponseMessage> updateExpenseCategories(@PathVariable long oldExpenseCategoryId, @PathVariable long newExpenseCategoryId, @PathVariable int userId) {
         if (this.expenseService.updateExpensesExpenseCategoryId(oldExpenseCategoryId, newExpenseCategoryId, userId) == 0) {
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Categories for expenses were updated."));
         } else {
@@ -187,7 +241,13 @@ public class ExpenseTableController {
 
     @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/delete/{expenseId}")
     public ResponseEntity<ResponseMessage> deleteExpense(@PathVariable Long expenseId) {
+        Expense deletedExpense = this.expenseService.getExpenseById(expenseId);
+        this.expenseDevelopmentService.checkAndUpdate(deletedExpense.getUserId());
+
         if (this.expenseService.deleteById(expenseId)) {
+            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(deletedExpense);
+            this.expenseDevelopmentService.deleteExpenseDevelopmentOfCurrentMonthYear(deletedExpense.getCentValue(), deletedExpense.getExpenseTimerange().getTimerangeId(), deletedExpense.getUserId());
+
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Your expense was deleted successfully."));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Expense does not exists!"));
@@ -199,7 +259,6 @@ public class ExpenseTableController {
         try {
             return ResponseEntity.ok(this.expenseService.getMonthlyRecurringExpensesSum(userId));
         } catch (DataValueNotFoundException e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
         }
     }
@@ -209,7 +268,6 @@ public class ExpenseTableController {
         try {
             return ResponseEntity.ok(this.expenseService.getYearlyRecurringExpensesSum(userId));
         } catch (DataValueNotFoundException e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
         }
     }
@@ -217,7 +275,7 @@ public class ExpenseTableController {
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/get/sum/single/custom/certainMonth/{month}/{userId}")
     public ResponseEntity<Integer> getOfCertainMonthSingleAndCustomExpensesSum(@PathVariable int month, @PathVariable int userId) {
         try {
-            return ResponseEntity.ok(this.expenseService.getSingleAndCustomExpensesByCertainMonth(month, userId));
+            return ResponseEntity.ok(this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonth(month, userId));
         } catch (DataValueNotFoundException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);

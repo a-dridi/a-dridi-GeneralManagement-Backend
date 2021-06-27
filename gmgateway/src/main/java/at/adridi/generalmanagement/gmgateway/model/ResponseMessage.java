@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+
+
 /**
  *
  * Class used to create text response for API requests

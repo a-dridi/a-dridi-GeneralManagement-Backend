@@ -43,7 +43,11 @@ public class ExpenseCategoryController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/all")
     public ResponseEntity<List<ExpenseCategory>> getAllExpenseCategory() {
-        List<ExpenseCategory> expenseCategoryList = this.expenseCategoryService.getAllExpenseCategory();
+        List<ExpenseCategory> expenseCategoryList = new ArrayList<>();
+        try {
+            expenseCategoryList = this.expenseCategoryService.getAllExpenseCategory();
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseCategoryList)) {
             return status(HttpStatus.OK).body(expenseCategoryList);
         } else {
@@ -62,19 +66,18 @@ public class ExpenseCategoryController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/get/byTitle/{title}")
     public ResponseEntity<ExpenseCategory> getAllExpenseCategoryByTitle(@PathVariable String title) {
-        ExpenseCategory expenseCategoryList = this.expenseCategoryService.getExpenseCategoryByTitle(title);
-        if (expenseCategoryList != null) {
-            return status(HttpStatus.OK).body(expenseCategoryList);
-        } else {
+        try {
+            return status(HttpStatus.OK).body(this.expenseCategoryService.getExpenseCategoryByTitle(title));
+        } catch (DataValueNotFoundException e) {
             return status(HttpStatus.BAD_REQUEST).body(new ExpenseCategory());
         }
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/add")
-    public ResponseEntity<ExpenseCategory> addExpenseCategory(@RequestBody String newExpenseCategoryJson) {
-        if (newExpenseCategoryJson != null) {
+    public ResponseEntity<ExpenseCategory> addExpenseCategory(@RequestBody String newExpenseCategoryString) {
+        if (newExpenseCategoryString != null || newExpenseCategoryString.trim().equals("")) {
             ExpenseCategory newExpenseCategory = new ExpenseCategory();
-            newExpenseCategory.setCategoryTitle(newExpenseCategoryJson);
+            newExpenseCategory.setCategoryTitle(newExpenseCategoryString);
             ExpenseCategory createdExpenseCategory = this.expenseCategoryService.save(newExpenseCategory);
             if (createdExpenseCategory != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(createdExpenseCategory);
@@ -88,13 +91,13 @@ public class ExpenseCategoryController {
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/update")
-    public ResponseEntity<ExpenseCategory> updateExpenseCategory(@RequestBody String updatedExpenseCategoryJson) {
+    public ResponseEntity<ExpenseCategory> updateExpenseCategory(@RequestBody String updatedExpenseCategoryString) {
         ObjectMapper objectMapper = new ObjectMapper();
         ExpenseCategory updatedExpenseCategory;
         try {
-            updatedExpenseCategory = objectMapper.readValue(updatedExpenseCategoryJson, ExpenseCategory.class);
+            updatedExpenseCategory = objectMapper.readValue(updatedExpenseCategoryString, ExpenseCategory.class);
             ExpenseCategory newUpdatedExpenseCategory = this.expenseCategoryService.save(updatedExpenseCategory);
-            if (newUpdatedExpenseCategory != null) {
+            if (newUpdatedExpenseCategory != null || updatedExpenseCategoryString.trim().equals("")) {
                 return ResponseEntity.status(HttpStatus.OK).body(newUpdatedExpenseCategory);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ExpenseCategory());

@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author A.Dridi
  */
+@Repository
 public interface ExpenseTimerangeRepository extends JpaRepository<ExpenseTimerange, Long> {
 
     Optional<ExpenseTimerange> findByTimerangeId(Long timerangeId);

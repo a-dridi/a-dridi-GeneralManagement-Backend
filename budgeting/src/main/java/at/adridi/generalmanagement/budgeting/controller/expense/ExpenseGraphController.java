@@ -5,6 +5,7 @@
  */
 package at.adridi.generalmanagement.budgeting.controller.expense;
 
+import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundException;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseGraph;
 import at.adridi.generalmanagement.budgeting.service.expense.ExpenseService;
 import at.adridi.generalmanagement.budgeting.util.ApiEndpoints;
@@ -34,7 +35,11 @@ public class ExpenseGraphController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEGRAPH + "/expensesSum/monthly/{userId}")
     public ResponseEntity<List<ExpenseGraph>> getAllMonthlyExpenseSum(@PathVariable int userId) {
-        List<ExpenseGraph> expensesSumList = this.expenseService.getMonthlySumExpenses(userId);
+        List<ExpenseGraph> expensesSumList = new ArrayList<>();
+        try {
+            expensesSumList = this.expenseService.getMonthlySumExpenses(userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expensesSumList)) {
             return status(HttpStatus.OK).body(expensesSumList);
         } else {
@@ -44,7 +49,11 @@ public class ExpenseGraphController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEGRAPH + "/expensesSum/yearly/{userId}")
     public ResponseEntity<List<ExpenseGraph>> getAllYearlyExpenseSum(@PathVariable int userId) {
-        List<ExpenseGraph> expensesSumList = this.expenseService.getYearlySumExpenses(userId);
+        List<ExpenseGraph> expensesSumList = new ArrayList<>();
+        try {
+            expensesSumList = this.expenseService.getYearlySumExpenses(userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expensesSumList)) {
             return status(HttpStatus.OK).body(expensesSumList);
         } else {
@@ -54,7 +63,11 @@ public class ExpenseGraphController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEGRAPH + "/expensesSum/currentYear/{userId}")
     public ResponseEntity<List<ExpenseGraph>> getAllCurrentYearExpenseSum(@PathVariable int userId) {
-        List<ExpenseGraph> expensesSumList = this.expenseService.getYearlySumExpenses(userId);
+        List<ExpenseGraph> expensesSumList = new ArrayList<>();
+        try {
+            expensesSumList = this.expenseService.getSumExpensesOfCurrentYear(userId);
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expensesSumList)) {
             return status(HttpStatus.OK).body(expensesSumList);
         } else {

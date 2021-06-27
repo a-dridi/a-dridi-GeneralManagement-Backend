@@ -5,13 +5,14 @@
  */
 package at.adridi.generalmanagement.budgeting.model.expense;
 
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.TableGenerator;
+import javax.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,14 +27,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class ExpenseBudget {
+public class ExpenseBudget implements Serializable{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "expensebudgetidgenerator")
-    @TableGenerator(name = "expensebudgetidgenerator", initialValue = 1, allocationSize = 2000, table = "sequence_expensebudget_id")
+    @SequenceGenerator(name="pk_expensebudget_sequence", sequenceName="expensebudget_id_seq", allocationSize=1)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expensebudget_sequence")
     private Long expensesbudgetId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     private ExpenseCategory expenseCategory;
     private Integer centBudgetValue = 0;
     private Integer centActualExpenses;

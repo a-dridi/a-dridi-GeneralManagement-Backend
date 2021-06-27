@@ -3,15 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package at.adridi.generalmanagement.model;
+package at.adridi.generalmanagement.common.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.TableGenerator;
+import javax.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,15 +33,16 @@ import lombok.Setter;
 public class AppDatabaseNote {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "databasenoteidgenerator")
-    @TableGenerator(name = "databasenoteidgenerator", initialValue = 1000, allocationSize = 2000, table = "sequence_databasenoteid")
+    @SequenceGenerator(name = "pk_appdatabase_sequence", sequenceName = "appdatabase_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_appdatabase_sequence")
     private Long id;
     @Column(unique = true)
-    private String table;
+    private String appTable;
     private String noteText;
 
-    //Auto. vom Programm zu gewiesen
-    private Date date = new Date();
+    @Basic
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date date;
 
     private Integer userId;
 }

@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created non database model to display graphs for expenses
+ * Created non database model to display graphs for expenses 
  * 
  * @author A.Dridi
  */

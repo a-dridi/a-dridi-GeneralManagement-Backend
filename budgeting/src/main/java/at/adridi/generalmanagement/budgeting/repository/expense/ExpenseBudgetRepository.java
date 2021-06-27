@@ -26,6 +26,9 @@ public interface ExpenseBudgetRepository extends JpaRepository<ExpenseBudget, Lo
 
     Optional<ExpenseBudget> findByExpenseCategory(ExpenseCategory expenseCategory);
 
+    Optional<ExpenseBudget> findByExpenseCategoryAndUserId(ExpenseCategory expenseCategory, Integer userId);
+
     @Query(value = "SELECT * FROM Expense_Budget eb INNER JOIN Expense_Category ec ON eb.expense_category_expense_category_id=ec.expense_category_id WHERE user_id=?1 ORDER BY ec.category_title ASC", nativeQuery = true)
-    Optional<ArrayList<ExpenseBudget>> getAllExpenseBudgetList(int userId);
+    Optional<ArrayList<ExpenseBudget>> getAllExpenseBudgetList(Integer userId);
+
 }

@@ -7,14 +7,17 @@ package at.adridi.generalmanagement.gmgateway.service;
 
 import at.adridi.generalmanagement.gmgateway.exceptions.DataValueNotFoundException;
 import at.adridi.generalmanagement.gmgateway.model.AppUser;
+import at.adridi.generalmanagement.gmgateway.model.ResponseMessage;
 import at.adridi.generalmanagement.gmgateway.repository.AppUserRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -32,7 +35,13 @@ public class UserService {
     @Autowired
     private AppUserRepository userRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private RestTemplate restTemplate;
+
+    @Bean
+    @LoadBalanced
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     /**
      * Save new AppUser.
@@ -124,5 +133,4 @@ public class UserService {
             return false;
         }
     }
-
 }

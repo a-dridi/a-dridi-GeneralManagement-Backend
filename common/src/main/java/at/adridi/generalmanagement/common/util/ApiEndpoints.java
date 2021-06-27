@@ -15,6 +15,15 @@ public class ApiEndpoints {
 
     public static final String API_RESTRICTED_DATABASE_DATABASENOTE = "/data/databasenote";
 
-    public static final String API_RESTRICTED_SETTINGS_APPLICATION = "/settings/app";
+    public static final String API_RESTRICTED_DATABASE_ORGANIZATION = "/data/organization";
+    public static final String API_RESTRICTED_DATABASE_ORGANIZATIONCATEGORY = "/data/organizationcategory";
+    public static final String API_RESTRICTED_DATABASE_BOOK = "/data/book";
+    public static final String API_RESTRICTED_DATABASE_BOOKCATEGORY = "/data/bookcategory";
+    public static final String API_RESTRICTED_DATABASE_BOOKAVAILABILITY = "/data/bookavailability";
+    public static final String API_RESTRICTED_DATABASE_BOOKGRAPH = "/data/bookgraph";
+    public static final String API_RESTRICTED_DATABASE_CRITERIAOPTION = "/data/criteriaoption";
+    public static final String API_RESTRICTED_DATABASE_DECISION = "/data/decision";
+    public static final String API_RESTRICTED_DATABASE_DECISIONOPTION = "/data/decisionoption";
+    public static final String API_RESTRICTED_DATABASE_OPTIONPOINT = "/data/optionpoint";
 
 }

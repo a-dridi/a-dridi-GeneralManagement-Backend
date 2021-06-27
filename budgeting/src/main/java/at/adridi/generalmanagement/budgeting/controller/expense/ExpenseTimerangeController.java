@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import lombok.AllArgsConstructor;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,30 +37,35 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ExpenseTimerangeController {
 
+    @Autowired
     private ExpenseTimerangeService expenseTimerangeService;
 
     /**
      * Add fixed timeranges to database.
      */
-    public ExpenseTimerangeController() {
-        this.expenseTimerangeService = new ExpenseTimerangeService();
-        this.addExpenseTimerange("onetime");
-        this.addExpenseTimerange("daily");
-        this.addExpenseTimerange("weekly");
-        this.addExpenseTimerange("biweekly");
-        this.addExpenseTimerange("monthly");
-        this.addExpenseTimerange("every 2 months");
-        this.addExpenseTimerange("every quartal");
-        this.addExpenseTimerange("every 6 months");
-        this.addExpenseTimerange("yearly");
-        this.addExpenseTimerange("every 2 years");
-        this.addExpenseTimerange("every 5 years");
-        this.addExpenseTimerange("custom");
+    @PostConstruct
+    public void prepareTimeranges() {
+        this.saveExpenseTimerange(1, "onetime");
+        this.saveExpenseTimerange(2, "daily");
+        this.saveExpenseTimerange(3, "weekly");
+        this.saveExpenseTimerange(4, "biweekly");
+        this.saveExpenseTimerange(5, "monthly");
+        this.saveExpenseTimerange(6, "every 2 months");
+        this.saveExpenseTimerange(7, "every quartal");
+        this.saveExpenseTimerange(8, "every 6 months");
+        this.saveExpenseTimerange(9, "yearly");
+        this.saveExpenseTimerange(10, "every 2 years");
+        this.saveExpenseTimerange(11, "every 5 years");
+        this.saveExpenseTimerange(12, "custom");
     }
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSETIMERANGE + "/all")
     public ResponseEntity<List<ExpenseTimerange>> getAllExpenseTimerange() {
-        List<ExpenseTimerange> expenseTimerangeList = this.expenseTimerangeService.getAllExpenseTimerange();
+        List<ExpenseTimerange> expenseTimerangeList = new ArrayList<>();
+        try {
+            expenseTimerangeList = this.expenseTimerangeService.getAllExpenseTimerange();
+        } catch (DataValueNotFoundException e) {
+        }
         if (!CollectionUtils.isEmpty(expenseTimerangeList)) {
             return status(HttpStatus.OK).body(expenseTimerangeList);
         } else {
@@ -79,10 +84,9 @@ public class ExpenseTimerangeController {
 
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSETIMERANGE + "/get/byTitle/{title}")
     public ResponseEntity<ExpenseTimerange> getAllExpenseTimerangeByTitle(@PathVariable String title) {
-        ExpenseTimerange expenseTimerange = this.expenseTimerangeService.getExpenseTimerangeByTitle(title);
-        if (expenseTimerange != null) {
-            return status(HttpStatus.OK).body(expenseTimerange);
-        } else {
+        try {
+            return status(HttpStatus.OK).body(this.expenseTimerangeService.getExpenseTimerangeByTitle(title));
+        } catch (DataValueNotFoundException e) {
             return status(HttpStatus.BAD_REQUEST).body(new ExpenseTimerange());
         }
     }
@@ -109,6 +113,22 @@ public class ExpenseTimerangeController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. The JSON object string could not be processed!"));
             default:
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Expense Timerange could not be saved!"));
+        }
+    }
+
+    public boolean saveExpenseTimerange(long expenseTimerangeId, String newExpenseTimerangeTitle) {
+        ExpenseTimerange newExpenseTimerange = new ExpenseTimerange();
+        try {
+            if (newExpenseTimerangeTitle != null && !newExpenseTimerangeTitle.trim().equals("")) {
+                newExpenseTimerange.setTimerangeId(expenseTimerangeId);
+                newExpenseTimerange.setTimerangeTitle(newExpenseTimerangeTitle);
+                this.expenseTimerangeService.save(newExpenseTimerange);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
         }
     }
 

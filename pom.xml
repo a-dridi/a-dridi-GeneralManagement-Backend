@@ -13,7 +13,9 @@
         <module>gmgateway</module>
         <module>budgeting</module>
         <module>common</module>
-    </modules>
+    <module>financial</module>
+    <module>media</module>
+  </modules>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

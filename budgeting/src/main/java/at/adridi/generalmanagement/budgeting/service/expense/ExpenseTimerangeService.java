@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author A.Dridi
  */
 @Service
-@Transactional
 @NoArgsConstructor
 public class ExpenseTimerangeService {
 
@@ -32,6 +31,7 @@ public class ExpenseTimerangeService {
      * @param newExpenseTimerange
      * @return 0 if successful. 1: Passed object is null. 2: Saving failed
      */
+    @Transactional()
     public Integer save(ExpenseTimerange newExpenseTimerange) {
         if (newExpenseTimerange == null) {
             return 1;
@@ -51,7 +51,6 @@ public class ExpenseTimerangeService {
      * @param id
      * @return
      */
-    @Transactional(readOnly = true)
     public ExpenseTimerange getExpenseTimerangeById(Long id) {
         return this.expenseTimerangeRepository.findByTimerangeId(id)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Timerange Does Not Exist"));
@@ -65,7 +64,6 @@ public class ExpenseTimerangeService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ExpenseTimerange getExpenseTimerangeByTitle(String title) {
         return this.expenseTimerangeRepository.findByTimerangeTitle(title)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Timerange Does Not Exist"));
@@ -76,7 +74,6 @@ public class ExpenseTimerangeService {
      *
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseTimerange> getAllExpenseTimerange() {
         return this.expenseTimerangeRepository.getAllExpenseTimerangeList().orElseThrow(() -> new DataValueNotFoundException("Expense Timerange List could not be loaded!"));
     }
@@ -87,12 +84,17 @@ public class ExpenseTimerangeService {
      * @param expenseTimerangeId
      * @return true if successful
      */
+    @Transactional()
     public boolean deleteById(Long expenseTimerangeId) {
         if (expenseTimerangeId == null || expenseTimerangeId == 0) {
             return false;
         }
-
-        ExpenseTimerange expenseTimerange = this.getExpenseTimerangeById(expenseTimerangeId);
+        ExpenseTimerange expenseTimerange = null;
+        try {
+            expenseTimerange = this.getExpenseTimerangeById(expenseTimerangeId);
+        } catch (DataValueNotFoundException e) {
+            return false;
+        }
 
         try {
             this.expenseTimerangeRepository.delete(expenseTimerange);
@@ -109,13 +111,18 @@ public class ExpenseTimerangeService {
      * @param timerangeTitle
      * @return true if successful
      */
+    @Transactional()
     public boolean deleteByTitle(String timerangeTitle) {
         if (timerangeTitle == null || timerangeTitle.trim().isBlank()) {
             return false;
         }
 
-        ExpenseTimerange expenseTimerange = this.getExpenseTimerangeByTitle(timerangeTitle);
-
+        ExpenseTimerange expenseTimerange = null;
+        try {
+            expenseTimerange = this.getExpenseTimerangeByTitle(timerangeTitle);
+        } catch (DataValueNotFoundException e) {
+            return false;
+        }
         try {
             this.expenseTimerangeRepository.delete(expenseTimerange);
             return false;

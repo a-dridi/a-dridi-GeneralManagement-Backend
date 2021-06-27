@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.Date;
 
 /**
  * Model class for tab Expense Calendar to display expenses and payment date in

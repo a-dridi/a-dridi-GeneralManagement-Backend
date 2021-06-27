@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author A.Dridi
  */
 @Service
-@Transactional
 @NoArgsConstructor
 public class ExpenseCategoryService {
 
@@ -31,13 +30,13 @@ public class ExpenseCategoryService {
      * Save new expense category.
      *
      * @param newExpenseCategory
-     * @return 0 if successful. 1: Passed object is null. 2: Saving failed
+     * @return null if failed. If successful: the saved object. 
      */
+    @Transactional()
     public ExpenseCategory save(ExpenseCategory newExpenseCategory) {
         if (newExpenseCategory == null) {
             return null;
         }
-
         return this.expenseCategoryRepository.save(newExpenseCategory);
     }
 
@@ -48,7 +47,6 @@ public class ExpenseCategoryService {
      * @param id
      * @return
      */
-    @Transactional(readOnly = true)
     public ExpenseCategory getExpenseCategoryById(Long id) {
         return this.expenseCategoryRepository.findByExpenseCategoryId(id)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Category Does Not Exist"));
@@ -62,7 +60,6 @@ public class ExpenseCategoryService {
      * @param userId
      * @return
      */
-    @Transactional(readOnly = true)
     public ExpenseCategory getExpenseCategoryByTitle(String title) {
         return this.expenseCategoryRepository.findByCategoryTitle(title)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Category Does Not Exist"));
@@ -73,7 +70,6 @@ public class ExpenseCategoryService {
      *
      * @return
      */
-    @Transactional(readOnly = true)
     public List<ExpenseCategory> getAllExpenseCategory() {
         return this.expenseCategoryRepository.getAllExpenseCategoryList().orElseThrow(() -> new DataValueNotFoundException("Expense Category List could not be loaded!"));
     }
@@ -84,6 +80,7 @@ public class ExpenseCategoryService {
      * @param expenseCategoryId
      * @return true if successful
      */
+    @Transactional()
     public boolean deleteById(Long expenseCategoryId) {
         if (expenseCategoryId == null || expenseCategoryId == 0) {
             return false;
@@ -106,6 +103,7 @@ public class ExpenseCategoryService {
      * @param categoryTitle
      * @return true if successful
      */
+    @Transactional()
     public boolean deleteByTitle(String categoryTitle) {
         if (categoryTitle == null || categoryTitle.trim().isBlank()) {
             return false;
@@ -119,7 +117,5 @@ public class ExpenseCategoryService {
         } catch (Exception e) {
             return false;
         }
-
     }
-
 }

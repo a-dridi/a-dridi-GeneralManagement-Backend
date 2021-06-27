@@ -5,12 +5,13 @@
  */
 package at.adridi.generalmanagement.budgeting.model.expense;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.TableGenerator;
+import javax.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,11 +26,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class ExpenseTimerange {
+public class ExpenseTimerange implements Serializable{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "timerangeidgenerator")
-    @TableGenerator(name = "timerangeidgenerator", initialValue = 1, allocationSize = 2000, table = "sequence_timerangeidgenerator")
+    @SequenceGenerator(name="pk_expensetimerange_sequence", sequenceName="expensetimerange_id_seq", allocationSize=1)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expensetimerange_sequence")
     private Long timerangeId;
 
     @Column(unique = true)

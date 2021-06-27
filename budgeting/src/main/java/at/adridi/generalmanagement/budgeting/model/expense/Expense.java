@@ -6,7 +6,7 @@
 package at.adridi.generalmanagement.budgeting.model.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.sql.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -16,8 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.TableGenerator;
-import javax.persistence.Temporal;
+import javax.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,11 +31,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class Expense {
+public class Expense implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "expenseidgenerator")
-    @TableGenerator(name = "expenseidgenerator", initialValue = 1, allocationSize = 2000, table = "sequence_expense_id")
+    @SequenceGenerator(name="pk_expense_sequence", sequenceName="expense_id_seq", allocationSize=1)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expense_sequence")
     private Long expenseId;
     private String title;
     @ManyToOne(cascade = CascadeType.MERGE)
@@ -45,7 +44,7 @@ public class Expense {
     @ManyToOne(cascade = CascadeType.MERGE)
     private ExpenseTimerange expenseTimerange;
     @Basic
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date paymentDate;
     @Column(length = 10000)
     private String information;
