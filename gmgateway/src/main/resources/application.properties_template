@@ -4,8 +4,9 @@ server.port=8760
 spring.application.name=gm-gateway-service
 
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
-eureka.client.register-with-eureka=true
-eureka.client.fetch-registry=true
+eureka.client.registerWithEureka=true
+eureka.client.fetchRegistry=true
+eureka.instance.hostname=localhost
 
 #Access all modules (services/REST apis) through the paths defined below 
 zuul.ignored-services=*
@@ -24,8 +25,8 @@ zuul.routes.budgeting-service.service-id=budgeting-service
 zuul.routes.financial-service.path=/api/financial/**
 zuul.routes.financial-service.service-id=financial-service
 
-zuul.routes.financial-service.path=/api/media/**
-zuul.routes.financial-service.service-id=media-service
+zuul.routes.media-service.path=/api/media/**
+zuul.routes.media-service.service-id=media-service
 
 ## default connection pool
 spring.datasource.hikari.connectionTimeout=20000

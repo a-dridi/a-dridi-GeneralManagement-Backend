@@ -49,6 +49,20 @@ public class ExpenseDevelopmentController {
         }
     }
 
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEDEVELOPMENT + "/last/24/{userId}")
+    public ResponseEntity<List<ExpenseDevelopment>> getLast24ExpenseDevelopmentList(@PathVariable int userId) {
+        List<ExpenseDevelopment> expenseDevelopmentList = new ArrayList<>();
+        try {
+            expenseDevelopmentList = this.expenseDevelopmentService.getLast24ExpenseDevelopmentList(userId);
+        } catch (DataValueNotFoundException e) {
+        }
+        if (!CollectionUtils.isEmpty(expenseDevelopmentList)) {
+            return status(HttpStatus.OK).body(expenseDevelopmentList);
+        } else {
+            return status(HttpStatus.BAD_REQUEST).body(new ArrayList<ExpenseDevelopment>());
+        }
+    }
+
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEDEVELOPMENT + "/last/15/years/{userId}")
     public ResponseEntity<List<ExpenseDevelopment>> getExpensesOfLast15Years(@PathVariable int userId) {
         List<ExpenseDevelopment> expenseDevelopmentList = new ArrayList<>();

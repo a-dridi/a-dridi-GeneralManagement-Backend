@@ -1,0 +1,24 @@
+# Increase the Hystrix timeout to 90s (globally)
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 90000
+            
+zuul:
+    ignoredServices: "*"
+    routes:
+        common-service:
+            path: /api/common/**
+            serviceId: common-service    
+        budgeting-service:
+            path: /api/budgeting/**
+            serviceId: budgeting-service
+        financial-service:
+            path: /api/financial/**
+            serviceId: financial-service
+        media-service:
+            path: /api/media/**
+            serviceId: media-service            

@@ -197,9 +197,9 @@ public class ExpenseDevelopmentService {
 
             //Calculate the year and month before monthsAmount of the current year and month. Subtract amount of months by the amount of full years. And the end calculate the start month in the year left in the calculation. 
             if (completeYearsAmount > 0) {
-                    startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
-                    startMonth = monthsOfPreviousYears - (12*completeYearsAmount);
-                    startMonth = 12 - startMonth;
+                startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
+                startMonth = monthsOfPreviousYears - (12 * completeYearsAmount);
+                startMonth = 12 - startMonth;
             } else {
                 startYear = currentYear;
                 startMonth = currentMonth - monthsAmount;
@@ -209,6 +209,17 @@ public class ExpenseDevelopmentService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Get the ExpenseDevelopment of the last 24 months and rows before the
+     * current month and year.
+     *
+     * @param userId
+     * @return empty list if monthsAmount is zero or negative.
+     */
+    public List<ExpenseDevelopment> getLast24ExpenseDevelopmentList(int userId) {
+        return this.expenseDevelopmentRepository.getLast24ExpenseDevelopmentList(userId).orElseThrow(() -> new DataValueNotFoundException("ExpenseDevelopment Does Not Exist"));
     }
 
     /**

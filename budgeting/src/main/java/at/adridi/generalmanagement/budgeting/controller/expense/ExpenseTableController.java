@@ -171,9 +171,7 @@ public class ExpenseTableController {
             savedExpense = this.expenseService.save(newExpense);
             this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(savedExpense);
 
-            if (!this.expenseDevelopmentService.checkAndUpdate(savedExpense.getUserId())) {
-                this.expenseDevelopmentService.addExpenseDevelopmentOfCurrentMonthYear(savedExpense.getCentValue(), savedExpense.getExpenseTimerange().getTimerangeId(), savedExpense.getUserId());
-            }
+            this.expenseDevelopmentService.addExpenseDevelopmentOfCurrentMonthYear(savedExpense.getCentValue(), savedExpense.getExpenseTimerange().getTimerangeId(), savedExpense.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(savedExpense);
         } catch (IOException ex) {
             Logger.getLogger(ExpenseTableController.class.getName()).log(Level.SEVERE, null, ex);

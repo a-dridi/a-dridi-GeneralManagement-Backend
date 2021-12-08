@@ -48,6 +48,20 @@ public class EarningDevelopmentController {
         }
     }
 
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EARNINGDEVELOPMENT + "/last/24/{userId}")
+    public ResponseEntity<List<EarningDevelopment>> getLast24EarningDevelopmentList(@PathVariable int userId) {
+        List<EarningDevelopment> earningDevelopmentList = new ArrayList<>();
+        try {
+            earningDevelopmentList = this.earningDevelopmentService.getLast24EarningDevelopmentList(userId);
+        } catch (DataValueNotFoundException e) {
+        }
+        if (!CollectionUtils.isEmpty(earningDevelopmentList)) {
+            return status(HttpStatus.OK).body(earningDevelopmentList);
+        } else {
+            return status(HttpStatus.BAD_REQUEST).body(new ArrayList<EarningDevelopment>());
+        }
+    }
+
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EARNINGDEVELOPMENT + "/last/15/years/{userId}")
     public ResponseEntity<List<EarningDevelopment>> getEarningsOfLast15Years(@PathVariable int userId) {
         List<EarningDevelopment> earningsDevelopmentList = new ArrayList<>();

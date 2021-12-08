@@ -27,8 +27,11 @@ public interface ExpenseDevelopmentRepository extends JpaRepository<ExpenseDevel
 
     Optional<List<ExpenseDevelopment>> findByDateDisplayAndUserId(String dateDisplay, int userId);
 
-    @Query(value = "SELECT * FROM Expense_Development ORDER BY expense_development_id ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM Expense_Development ORDER BY expense_development_id DESC", nativeQuery = true)
     Optional<ArrayList<ExpenseDevelopment>> getAllExpenseDevelopmentList(Integer userId);
+
+    @Query(value = "SELECT * FROM Expense_Development ORDER BY expense_development_id DESC LIMIT 24", nativeQuery = true)
+    Optional<ArrayList<ExpenseDevelopment>> getLast24ExpenseDevelopmentList(Integer userId);
 
     @Query(value = "SELECT * FROM Expense_Development WHERE user_id = ?1 ORDER BY expense_development_id DESC LIMIT 1", nativeQuery = true)
     Optional<ExpenseDevelopment> getLastExpenseDevelopmentRow(int userId);
@@ -38,7 +41,7 @@ public interface ExpenseDevelopmentRepository extends JpaRepository<ExpenseDevel
 
     @Query(value = "SELECT SUM(cent_sum) FROM Expense_Development WHERE year = ?1 AND user_id = ?2", nativeQuery = true)
     Optional<Integer> getCentSumOfExpenseDevelopmentOfCertainYear(Integer year, Integer userId);
-    
+
     @Query(value = "SELECT SUM(cent_sum) FROM Expense_Development WHERE year >= ?1 AND year <= ?2 user_id = ?3", nativeQuery = true)
     Optional<Integer> getCentSumOfExpenseDevelopmentOfYearRange(Integer startYear, Integer endYear, Integer userId);
 

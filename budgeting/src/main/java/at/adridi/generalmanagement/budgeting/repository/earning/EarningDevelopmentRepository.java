@@ -30,6 +30,9 @@ public interface EarningDevelopmentRepository extends JpaRepository<EarningDevel
     @Query(value = "SELECT * FROM Earning_Development ORDER BY earning_development_id ASC", nativeQuery = true)
     Optional<ArrayList<EarningDevelopment>> getAllEarningDevelopmentList(Integer userId);
 
+    @Query(value = "SELECT * FROM Earning_Development WHERE user_id = ?1 ORDER BY earning_development_id DESC LIMIT 24", nativeQuery = true)
+    Optional<List<EarningDevelopment>> getLast24EarningDevelopmentList(int userId);
+
     @Query(value = "SELECT * FROM Earning_Development WHERE user_id = ?1 ORDER BY earning_development_id DESC LIMIT 1", nativeQuery = true)
     Optional<EarningDevelopment> getLastEarningDevelopmentRow(int userId);
 
@@ -38,7 +41,7 @@ public interface EarningDevelopmentRepository extends JpaRepository<EarningDevel
 
     @Query(value = "SELECT SUM(cent_sum) FROM Earning_Development WHERE year = ?1 AND user_id = ?2", nativeQuery = true)
     Optional<Integer> getCentSumOfEarningDevelopmentOfCertainYear(Integer year, Integer userId);
-    
+
     @Query(value = "SELECT SUM(cent_sum) FROM Earning_Development WHERE year >= ?1 AND year <= ?2 user_id = ?3", nativeQuery = true)
     Optional<Integer> getCentSumOfEarningDevelopmentOfYearRange(Integer startYear, Integer endYear, Integer userId);
 

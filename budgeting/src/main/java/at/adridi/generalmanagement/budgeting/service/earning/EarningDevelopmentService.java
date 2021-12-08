@@ -8,6 +8,7 @@ package at.adridi.generalmanagement.budgeting.service.earning;
 import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundException;
 import at.adridi.generalmanagement.budgeting.model.earning.EarningDevelopment;
 import at.adridi.generalmanagement.budgeting.model.earning.EarningDevelopment;
+import at.adridi.generalmanagement.budgeting.model.expense.ExpenseDevelopment;
 import at.adridi.generalmanagement.budgeting.repository.earning.EarningDevelopmentRepository;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -166,6 +167,17 @@ public class EarningDevelopmentService {
     }
 
     /**
+     * Get the EarningDevelopment of the last 24 months and rows before the
+     * current month and year.
+     *
+     * @param userId
+     * @return empty list if monthsAmount is zero or negative.
+     */
+    public List<EarningDevelopment> getLast24EarningDevelopmentList(int userId) {
+        return this.earningDevelopmentRepository.getLast24EarningDevelopmentList(userId).orElseThrow(() -> new DataValueNotFoundException("EarningDevelopment Does Not Exist"));
+    }
+
+    /**
      * Get the EarningDevelopment of the last n of months before the current
      * month and year. Example monthsAmount is 48 for the last two years.
      *
@@ -193,9 +205,9 @@ public class EarningDevelopmentService {
 
             //Calculate the year and month before monthsAmount of the current year and month. Subtract amount of months by the amount of full years. And the end calculate the start month in the year left in the calculation. 
             if (completeYearsAmount > 0) {
-                    startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
-                    startMonth = monthsOfPreviousYears - (12*completeYearsAmount);
-                    startMonth = 12 - startMonth;
+                startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
+                startMonth = monthsOfPreviousYears - (12 * completeYearsAmount);
+                startMonth = 12 - startMonth;
             } else {
                 startYear = currentYear;
                 startMonth = currentMonth - monthsAmount;
