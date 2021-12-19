@@ -14,8 +14,10 @@ import at.adridi.generalmanagement.budgeting.repository.expense.ExpenseRepositor
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.sql.Date;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -190,7 +192,7 @@ public class ExpenseService {
      * Get sum of single and custom expense of a certain month and year
      * calculated. DataValueNotFoundException if it is not available.
      *
-     * @param month 
+     * @param month
      * @param year year number example: 1990
      * @param userId
      * @return
@@ -286,7 +288,8 @@ public class ExpenseService {
     @Transactional
     public int updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, Date paymentDate, String information, Long expenseId, int userId) {
         try {
-            this.expenseRepository.updateExpenseTableData(title, expenseCategoryId, centValue, timerangeId, paymentDate.toString(), information, expenseId, userId);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.UK);
+            this.expenseRepository.updateExpenseTableData(title, expenseCategoryId, centValue, timerangeId, dateFormat.format(paymentDate), information, expenseId, userId);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -372,9 +375,10 @@ public class ExpenseService {
             List<ExpenseGraph> currentYearExpenses = new ArrayList();
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 int currentYearSum = 0;
-                SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
-                int currentYear = Integer.parseInt(yearFormat.format(Calendar.getInstance().getTime()));
-                currentYearSum += this.expenseRepository.getSumSingleExpensesByYear(currentYear, userId).orElse(0);
+                //SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+                int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                //int currentYear = Integer.parseInt(yearFormat.format(Calendar.getInstance().getTime()));
+                currentYearSum += this.expenseRepository.getSumSingleExpensesByYearCategoryId(currentYear, expenseCategory.getExpenseCategoryId(), userId).orElse(0);
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 365;
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 52;
                 currentYearSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 26;

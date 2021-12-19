@@ -90,14 +90,14 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query(value = "SELECT ec.categoryTitle, sum(e.centValue) FROM Expense e INNER JOIN ExpenseCategory ec ON e.expenseCategory=ec INNER JOIN ExpenseTimerange et ON e.expenseTimerange=et WHERE et.timerangeId=?1 AND e.userId=?2 AND deleted=false GROUP BY e.expenseCategory ORDER BY ec.expenseCategoryId ASC")
     Optional<ArrayList<Object[]>> getSumExpensesByTimerangeId(Long timerangeId, int userId);
 
-    @Query(value = "SELECT sum(cent_value) FROM Expense WHERE expense_timerange_timerange_id=?1 AND user_id=?2 AND expense_category_expense_category_id=?3 AND deleted=false GROUP BY expense_category_expense_category_id ", nativeQuery = true)
+    @Query(value = "SELECT sum(cent_value) FROM Expense WHERE expense_timerange_timerange_id=?1 AND user_id=?2 AND expense_category_expense_category_id=?3 AND deleted=false", nativeQuery = true)
     Optional<Integer> getSumExpensesByTimerangeIdExpenseCategoryId(Long timerangeId, int userId, Long expenseCategoryId);
 
     @Query(value = "SELECT SUM(cent_value) FROM Expense WHERE expense_timerange_timerange_id = ?1 AND expense_category_expense_category_id = ?2 AND (EXTRACT(month from payment_date) = ?3) AND user_id = ?4 AND deleted=false", nativeQuery = true)
     Optional<Integer> getSumByCertainTimerangeAndCategoryAndCertainMonth(long expenseTimerangeId, long expenseCategoriyId, int month, int userId);
 
-    @Query(value = "SELECT sum(cent_value) FROM Expense WHERE (EXTRACT(year from payment_date)=?1) AND user_id=?2 AND expense_timerange_timerange_id=1 AND deleted=false", nativeQuery = true)
-    Optional<Integer> getSumSingleExpensesByYear(int year, int userId);
+    @Query(value = "SELECT sum(cent_value) FROM Expense WHERE (EXTRACT(year from payment_date)=?1) AND expense_timerange_timerange_id=1 AND expense_category_expense_category_id = ?2 AND user_id=?3 AND deleted=false", nativeQuery = true)
+    Optional<Integer> getSumSingleExpensesByYearCategoryId(int year, long categoryId, int userId);
 
     @Query(value = "SELECT sum(cent_value) FROM Expense WHERE (EXTRACT(month from payment_date)=?1) AND user_id=?2 AND expense_timerange_timerange_id=1 AND deleted=false", nativeQuery = true)
     Optional<Integer> getSumSingleExpensesByMonth(int month, int userId);

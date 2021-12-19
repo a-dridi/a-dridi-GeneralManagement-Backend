@@ -44,7 +44,7 @@ public class Expense implements Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     private ExpenseTimerange expenseTimerange;
     @Basic
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = JsonFormat.DEFAULT_TIMEZONE)
     private Date paymentDate;
     @Column(length = 10000)
     private String information;

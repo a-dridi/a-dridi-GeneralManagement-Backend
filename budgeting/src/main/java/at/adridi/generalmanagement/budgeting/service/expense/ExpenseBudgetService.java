@@ -122,11 +122,10 @@ public class ExpenseBudgetService {
             throw new DataValueNotFoundException("Expense Budget List could not be loaded!");
         }
         for (ExpenseBudget expenseBudget : savedExpenseBudget) {
-            System.out.println("getAllExpenseBudget!!! 11");
             int monthExpensesOfCategory = this.expenseService.getCurrentMonthExpensesOfExpenseCategory(expenseBudget.getExpenseCategory().getExpenseCategoryId(), userId);
             ExpenseBudget updatedExpenseBudget = expenseBudget;
             updatedExpenseBudget.setCentActualExpenses(monthExpensesOfCategory);
-            updatedExpenseBudget.setCentDifference(expenseBudget.getCentBudgetValue() - expenseBudget.getCentActualExpenses());
+            updatedExpenseBudget.setCentDifference(expenseBudget.getCentBudgetValue() - updatedExpenseBudget.getCentActualExpenses());
             int difference = updatedExpenseBudget.getCentDifference();
             if (difference > 0) {
                 updatedExpenseBudget.setS("+");

@@ -55,9 +55,9 @@ public class ExpenseTableController {
         List<Expense> expenseList = new ArrayList<>();
         try {
             expenseList = this.expenseService.getAllExpense(userId);
-            this.expenseDevelopmentService.checkAndUpdate(userId);
         } catch (DataValueNotFoundException e) {
         }
+
         if (!CollectionUtils.isEmpty(expenseList)) {
             return status(HttpStatus.OK).body(expenseList);
         } else {
@@ -84,6 +84,7 @@ public class ExpenseTableController {
         List<Expense> expenseList = new ArrayList<>();
         try {
             expenseList = this.expenseService.getExpensesByMonthYear(month, year, userId);
+            this.expenseDevelopmentService.checkAndUpdate(userId);
         } catch (DataValueNotFoundException e) {
         }
         if (!CollectionUtils.isEmpty(expenseList)) {
@@ -190,7 +191,7 @@ public class ExpenseTableController {
             oldExpense = this.expenseService.getExpenseById(updatedExpense.getExpenseId());
             savedExpense = this.expenseService.save(updatedExpense);
             this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(savedExpense);
-            this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
+            //this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
             this.expenseDevelopmentService.updateExpenseDevelopmentOfCurrentMonthYear(oldExpense.getCentValue(), savedExpense.getCentValue(), savedExpense.getExpenseTimerange().getTimerangeId(), savedExpense.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(savedExpense);
         } catch (IOException ex) {
@@ -208,6 +209,7 @@ public class ExpenseTableController {
             updatedExpense = objectMapper.readValue(updatedExpenseJson, Expense.class);
             Expense oldExpense = this.expenseService.getExpenseById(updatedExpense.getExpenseId());
             this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
+            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(updatedExpense);
 
             if (this.expenseService.updateExpenseTableData(updatedExpense.getTitle(), updatedExpense.getExpenseCategory().getExpenseCategoryId(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getPaymentDate(), updatedExpense.getInformation(), updatedExpense.getExpenseId(), updatedExpense.getUserId()) != -1) {
                 if (oldExpense.getExpenseTimerange().getTimerangeId().equals(updatedExpense.getExpenseTimerange().getTimerangeId())) {
@@ -240,11 +242,11 @@ public class ExpenseTableController {
     @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/delete/{expenseId}")
     public ResponseEntity<ResponseMessage> deleteExpense(@PathVariable Long expenseId) {
         Expense deletedExpense = this.expenseService.getExpenseById(expenseId);
-        this.expenseDevelopmentService.checkAndUpdate(deletedExpense.getUserId());
 
         if (this.expenseService.deleteById(expenseId)) {
-            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(deletedExpense);
             this.expenseDevelopmentService.deleteExpenseDevelopmentOfCurrentMonthYear(deletedExpense.getCentValue(), deletedExpense.getExpenseTimerange().getTimerangeId(), deletedExpense.getUserId());
+            deletedExpense.setCentValue(0);
+            this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(deletedExpense);
 
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Your expense was deleted successfully."));
         } else {

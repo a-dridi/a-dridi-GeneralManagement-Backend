@@ -52,7 +52,6 @@ public class EarningTableController {
         List<Earning> earningList = new ArrayList<>();
         try {
             earningList = this.earningService.getAllEarning(userId);
-            this.earningDevelopmentService.checkAndUpdate(userId);
         } catch (DataValueNotFoundException e) {
         }
         if (!CollectionUtils.isEmpty(earningList)) {
@@ -67,6 +66,7 @@ public class EarningTableController {
         List<Earning> earningList = new ArrayList<>();
         try {
             earningList = this.earningService.getEarningsOfCertainYear(year, userId);
+            this.earningDevelopmentService.checkAndUpdate(userId);
         } catch (DataValueNotFoundException e) {
         }
         if (!CollectionUtils.isEmpty(earningList)) {
@@ -166,9 +166,13 @@ public class EarningTableController {
         try {
             newEarning = objectMapper.readValue(newEarningJson, Earning.class);
             savedEarning = this.earningService.save(newEarning);
+            /*
             if (!this.earningDevelopmentService.checkAndUpdate(savedEarning.getUserId())) {
                 this.earningDevelopmentService.addEarningDevelopmentOfCurrentMonthYear(savedEarning.getCentValue(), savedEarning.getEarningTimerange().getTimerangeId(), savedEarning.getUserId());
             }
+             */
+            this.earningDevelopmentService.addEarningDevelopmentOfCurrentMonthYear(savedEarning.getCentValue(), savedEarning.getEarningTimerange().getTimerangeId(), savedEarning.getUserId());
+
             return ResponseEntity.status(HttpStatus.OK).body(savedEarning);
         } catch (IOException ex) {
             Logger.getLogger(EarningTableController.class.getName()).log(Level.SEVERE, null, ex);
@@ -186,7 +190,7 @@ public class EarningTableController {
             updatedEarning = objectMapper.readValue(updatedEarningJson, Earning.class);
             oldEarning = this.earningService.getEarningById(updatedEarning.getEarningId());
             savedEarning = this.earningService.save(updatedEarning);
-            this.earningDevelopmentService.checkAndUpdate(oldEarning.getUserId());
+            //this.earningDevelopmentService.checkAndUpdate(oldEarning.getUserId());
             this.earningDevelopmentService.updateEarningDevelopmentOfCurrentMonthYear(oldEarning.getCentValue(), savedEarning.getCentValue(), savedEarning.getEarningTimerange().getTimerangeId(), savedEarning.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(savedEarning);
         } catch (IOException ex) {
