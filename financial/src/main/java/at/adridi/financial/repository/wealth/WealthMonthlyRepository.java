@@ -22,6 +22,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WealthMonthlyRepository extends JpaRepository<WealthMonthly, Long> {
 
+    @Query(value = "SELECT * FROM Wealth_Monthly WHERE month_year=?1 AND year_date=?2 AND user_id=?3", nativeQuery = true)
+    Optional<WealthMonthly> findByMonthDateAndYearDate(int monthDate, int yearDate, int userId);
+
     Optional<WealthMonthly> findByWealthmonthlyId(Long wealthmonthlyId);
 
     @Query(value = "SELECT * FROM Wealth_Monthly WHERE user_id = ?1 ORDER BY wealthmonthly_id DESC LIMIT 1", nativeQuery = true)

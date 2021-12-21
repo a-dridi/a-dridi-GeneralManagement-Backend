@@ -37,10 +37,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class WealthMonthlyController {
-
+    
     @Autowired
     private WealthMonthlyService wealthMonthlyService;
-
+    
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_WEALTHMONTHLY + "/all/{userId}")
     public ResponseEntity<List<WealthMonthly>> getAllWealthMonthly(@PathVariable int userId) {
         List<WealthMonthly> wealthMonthlyList = new ArrayList<>();
@@ -54,7 +54,7 @@ public class WealthMonthlyController {
             return status(HttpStatus.BAD_REQUEST).body(new ArrayList<WealthMonthly>());
         }
     }
-
+    
     @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_WEALTHMONTHLY + "/get/byId/{id}")
     public ResponseEntity<WealthMonthly> getWealthMonthlyById(@PathVariable Long id) {
         try {
@@ -63,7 +63,7 @@ public class WealthMonthlyController {
             return status(HttpStatus.BAD_REQUEST).body(new WealthMonthly());
         }
     }
-
+    
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_WEALTHMONTHLY + "/update")
     public ResponseEntity<WealthMonthly> updateWealthMonthly(@RequestBody String updatedWealthMonthlyJson) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -78,13 +78,16 @@ public class WealthMonthlyController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new WealthMonthly());
         }
     }
-
+    
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_WEALTHMONTHLY + "/updateTableData")
     public ResponseEntity<ResponseMessage> updateWealthMonthlyTableData(@RequestBody String updatedWealthMonthlyJson) {
         ObjectMapper objectMapper = new ObjectMapper();
         WealthMonthly updatedWealthMonthly;
         try {
             updatedWealthMonthly = objectMapper.readValue(updatedWealthMonthlyJson, WealthMonthly.class);
+            if (updatedWealthMonthly.getDifferenceCent() == 0) {
+                updatedWealthMonthly.setDifferenceCent(updatedWealthMonthly.getExpenseCent() - updatedWealthMonthly.getEarningCent());
+            }
             if (this.wealthMonthlyService.updateWealthMonthlyTableData(updatedWealthMonthly.getMonthDate(), updatedWealthMonthly.getYearDate(), updatedWealthMonthly.getExpenseCent(), updatedWealthMonthly.getEarningCent(), updatedWealthMonthly.getDifferenceCent(), updatedWealthMonthly.getImprovementPct(), updatedWealthMonthly.getNotice(), updatedWealthMonthly.getWealthmonthlyId(), updatedWealthMonthly.getUserId()) != -1) {
                 //Adjust the value for improvementPct of the latest monthly wealth item (of the current year and month). 
                 this.wealthMonthlyService.updateImprovementPct(updatedWealthMonthly.getUserId());
@@ -95,10 +98,10 @@ public class WealthMonthlyController {
         } catch (Exception ex) {
             Logger.getLogger(WealthMonthlyController.class.getName()).log(Level.SEVERE, null, ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Wealth Monthly could not be updated!"));
-
+            
         }
     }
-
+    
     @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_WEALTHMONTHLY + "/delete/{wealthMonthlyId}")
     public ResponseEntity<ResponseMessage> deleteWealthMonthlyById(@PathVariable Long wealthMonthlyId) {
         if (this.wealthMonthlyService.deleteById(wealthMonthlyId)) {
@@ -107,5 +110,5 @@ public class WealthMonthlyController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Wealth Monthly item does not exists!"));
         }
     }
-
+    
 }

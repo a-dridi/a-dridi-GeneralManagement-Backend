@@ -12,6 +12,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"month_date", "year_date", "user_id"}))
 public class WealthMonthly implements Serializable {
 
     @Id
@@ -36,7 +39,9 @@ public class WealthMonthly implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_wealthmonthly_sequence")
     private Long wealthmonthlyId;
 
+    @Column(name = "month_date")
     private int monthDate;
+    @Column(name = "year_date")
     private int yearDate;
 
     private int expenseCent;
@@ -55,6 +60,8 @@ public class WealthMonthly implements Serializable {
     private String attachmentPath;
     private String attachmentName;
     private String attachmentType;
+    
+    @Column(name="user_id")
     private Integer userId;
 
 }

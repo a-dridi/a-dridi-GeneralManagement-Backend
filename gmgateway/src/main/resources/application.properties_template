@@ -8,6 +8,11 @@ eureka.client.registerWithEureka=true
 eureka.client.fetchRegistry=true
 eureka.instance.hostname=localhost
 
+zuul.ignored-services=*
+zuul.ribbon.eager-load.enabled=true
+ribbon.ConnectTimeout= 10000
+ribbon.ReadTimeout: 10000
+
 #Access all modules (services/REST apis) through the paths defined below 
 zuul.ignored-services=*
 hystrix.command.default.execution.timeout.enabled: false

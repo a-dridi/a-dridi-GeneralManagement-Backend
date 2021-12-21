@@ -30,7 +30,7 @@ public interface WealthYearlyRepository extends JpaRepository<WealthYearly, Long
     Optional<ArrayList<WealthYearly>> getAllWealthYearlyList(int userId);
 
     @Query(value = "SELECT * FROM Wealth_Yearly WHERE year_date=?1 AND user_id=?2", nativeQuery = true)
-    Optional<ArrayList<WealthYearly>> getAllWealthYearlyByYearDate(int yearDate, int userId);
+    Optional<WealthYearly> getWealthYearlyByYearDate(int yearDate, int userId);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE Wealth_Yearly SET year_date = ?1, expense_cent = ?2, earning_cent = ?3, difference_cent=?4, improvement_pct=?5, notice=?6 WHERE wealthyearly_id=?7 and user_id=?8", nativeQuery = true)
