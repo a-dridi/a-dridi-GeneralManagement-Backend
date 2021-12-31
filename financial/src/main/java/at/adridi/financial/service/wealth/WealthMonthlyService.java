@@ -70,6 +70,7 @@ public class WealthMonthlyService {
      * Creates missing wealth monthly items to the current month and year. This
      * ensures that there are wealth monthly items for every month and year.
      */
+    @Transactional
     public boolean updateWealthMonthlyState(int userId) {
         Date currentDate = new Date();
         SimpleDateFormat formatMM = new SimpleDateFormat("MM");
@@ -106,9 +107,10 @@ public class WealthMonthlyService {
      *
      * @return
      */
+    @Transactional
     public boolean updateImprovementPct(int userId) {
         List<WealthMonthly> latest2WealthMonthlyList = this.wealthMonthlyRepository.getLatest2WealthMonthlyOfUser(userId).orElse(new ArrayList<>());
-        if (!latest2WealthMonthlyList.isEmpty()) {
+        if (!latest2WealthMonthlyList.isEmpty() && latest2WealthMonthlyList.size() >= 2) {
             //The latest/current wealth monthly item (of the current month and year)
             WealthMonthly latestWealthMonthly1 = latest2WealthMonthlyList.get(0);
             //The item before the latest 

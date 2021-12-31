@@ -7,6 +7,7 @@ package at.adridi.generalmanagement.budgeting.repository.expense;
 
 import at.adridi.generalmanagement.budgeting.model.expense.Expense;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseCategory;
+import at.adridi.generalmanagement.budgeting.model.expense.ExpenseReminder;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseTimerange;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -79,8 +80,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     void updateCategoryOfAllExpenses(long newExpenseCategoryId, long oldExpenseCategoryId, int userId);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE Expense SET title=?1, expense_category_expense_category_id=?2, cent_value=?3, expense_timerange_timerange_id=?4, payment_date=cast(?5 AS timestamp), information=?6 WHERE expense_id=?7 and user_id=?8", nativeQuery = true)
-    void updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, String paymentDate, String information, Long expenseId, int userId);
+    @Query(value = "UPDATE Expense SET title=?1, expense_category_expense_category_id=?2, cent_value=?3, expense_timerange_timerange_id=?4, payment_date=cast(?5 AS timestamp), information=?6, is_reminding=?7 WHERE expense_id=?8 and user_id=?9", nativeQuery = true)
+    void updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, String paymentDate, String information, boolean isReminding, Long expenseId, int userId);
 
     /*
     @Modifying(clearAutomatically = true)

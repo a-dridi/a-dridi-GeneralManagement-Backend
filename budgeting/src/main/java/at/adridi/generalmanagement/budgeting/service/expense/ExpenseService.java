@@ -9,12 +9,12 @@ import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundExcepti
 import at.adridi.generalmanagement.budgeting.model.expense.Expense;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseCategory;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseGraph;
+import at.adridi.generalmanagement.budgeting.model.expense.ExpenseReminder;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseTimerange;
 import at.adridi.generalmanagement.budgeting.repository.expense.ExpenseRepository;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.sql.Date;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -286,10 +286,10 @@ public class ExpenseService {
      * @return
      */
     @Transactional
-    public int updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, Date paymentDate, String information, Long expenseId, int userId) {
+    public int updateExpenseTableData(String title, Long expenseCategoryId, int centValue, Long timerangeId, Date paymentDate, String information, boolean isReminding, Long expenseId, int userId) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.UK);
-            this.expenseRepository.updateExpenseTableData(title, expenseCategoryId, centValue, timerangeId, dateFormat.format(paymentDate), information, expenseId, userId);
+            this.expenseRepository.updateExpenseTableData(title, expenseCategoryId, centValue, timerangeId, dateFormat.format(paymentDate), information, isReminding, expenseId, userId);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

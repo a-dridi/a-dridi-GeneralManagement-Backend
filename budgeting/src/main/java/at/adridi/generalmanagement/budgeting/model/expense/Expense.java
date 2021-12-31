@@ -6,6 +6,7 @@
 package at.adridi.generalmanagement.budgeting.model.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.sql.Date;
 import javax.persistence.Basic;
@@ -16,6 +17,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.Getter;
@@ -34,8 +36,9 @@ import lombok.Setter;
 public class Expense implements Serializable {
 
     @Id
-    @SequenceGenerator(name="pk_expense_sequence", sequenceName="expense_id_seq", allocationSize=1)
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expense_sequence")
+    @SequenceGenerator(name = "pk_expense_sequence", sequenceName = "expense_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_expense_sequence")
+    @Column(name = "expense_id")
     private Long expenseId;
     private String title;
     @ManyToOne(cascade = CascadeType.MERGE)
@@ -48,6 +51,11 @@ public class Expense implements Serializable {
     private Date paymentDate;
     @Column(length = 10000)
     private String information;
+
+    @Column(columnDefinition = "boolean default false")
+    @JsonProperty(value = "isReminding")
+    private boolean isReminding = false;
+
     private boolean attachment = false;
     private String attachmentPath;
     private String attachmentName;

@@ -34,11 +34,7 @@ public interface SavingsRepository extends JpaRepository<Savings, Long> {
     void restoreDeletedSavings(Long savingsId);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE Savings SET description = ?1, target_cent = ?2, step_amount_cent = ?3, savings_frequency = ?4, saved_till_now_cent=?5, last_savings_update_date=?6, notice=?7 WHERE organization_id=?8 and user_id=?9", nativeQuery = true)
-    void updateSavingsTableData(String description, Integer targetCent, Integer stepAmountCent, Integer savingsFrequency, Integer savedTillNowCent, Date lastSavingsUpdateDate, String notice, Long organizationId, int userId);
-
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(value = "UPDATE Organization SET organization_category_organization_category_id = ?1 WHERE organization_category_organization_category_id = ?2 AND user_id = ?3", nativeQuery = true)
-    void updateCategoryOfAllOrganizationItems(long newExpenseCategoryId, long oldExpenseCategoryId, int userId);
+    @Query(value = "UPDATE Savings SET description = ?1, target_cent = ?2, step_amount_cent = ?3, savings_frequency = ?4, saved_till_now_cent=?5, last_savings_update_date=?6, notice=?7 WHERE savings_id=?8 and user_id=?9", nativeQuery = true)
+    void updateSavingsTableData(String description, Integer targetCent, Integer stepAmountCent, Integer savingsFrequency, Integer savedTillNowCent, Date lastSavingsUpdateDate, String notice, Long savingsId, int userId);
 
 }

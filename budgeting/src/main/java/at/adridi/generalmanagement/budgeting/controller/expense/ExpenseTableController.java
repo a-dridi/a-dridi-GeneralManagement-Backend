@@ -211,7 +211,7 @@ public class ExpenseTableController {
             this.expenseDevelopmentService.checkAndUpdate(oldExpense.getUserId());
             this.expenseBudgetService.updateExpensesOfAExpenseBudgetCategory(updatedExpense);
 
-            if (this.expenseService.updateExpenseTableData(updatedExpense.getTitle(), updatedExpense.getExpenseCategory().getExpenseCategoryId(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getPaymentDate(), updatedExpense.getInformation(), updatedExpense.getExpenseId(), updatedExpense.getUserId()) != -1) {
+            if (this.expenseService.updateExpenseTableData(updatedExpense.getTitle(), updatedExpense.getExpenseCategory().getExpenseCategoryId(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), updatedExpense.getPaymentDate(), updatedExpense.getInformation(), updatedExpense.isReminding(), updatedExpense.getExpenseId(), updatedExpense.getUserId()) != -1) {
                 if (oldExpense.getExpenseTimerange().getTimerangeId().equals(updatedExpense.getExpenseTimerange().getTimerangeId())) {
                     this.expenseDevelopmentService.updateExpenseDevelopmentOfCurrentMonthYear(oldExpense.getCentValue(), updatedExpense.getCentValue(), updatedExpense.getExpenseTimerange().getTimerangeId(), oldExpense.getUserId());
                 } else {

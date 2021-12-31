@@ -15,8 +15,8 @@ spring.datasource.hikari.maximumPoolSize=5
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 spring.datasource.url=jdbc:postgresql://localhost:5432/gm_budgeting
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
+spring.datasource.username=YOUR_DATABBASE_USERNAME
+spring.datasource.password=YOUR_DATABBASE_PASSWORD
 
 #drop and create table again, good for testing, comment this in production - Or use "update" in production. 
 spring.jpa.hibernate.ddl-auto=create-drop

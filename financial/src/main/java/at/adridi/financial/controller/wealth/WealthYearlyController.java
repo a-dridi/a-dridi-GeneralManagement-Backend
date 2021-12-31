@@ -85,10 +85,13 @@ public class WealthYearlyController {
         WealthYearly updatedWealthYearly;
         try {
             updatedWealthYearly = objectMapper.readValue(updatedWealthYearlyJson, WealthYearly.class);
+            /*
             if (updatedWealthYearly.getDifferenceCent() == 0) {
                 updatedWealthYearly.setDifferenceCent(updatedWealthYearly.getExpenseCent() - updatedWealthYearly.getEarningCent());
             }
-            
+             */
+            updatedWealthYearly.setDifferenceCent(updatedWealthYearly.getExpenseCent() - updatedWealthYearly.getEarningCent());
+
             if (this.wealthYearlyService.updateWealthYearlyTableData(updatedWealthYearly.getYearDate(), updatedWealthYearly.getExpenseCent(), updatedWealthYearly.getEarningCent(), updatedWealthYearly.getDifferenceCent(), updatedWealthYearly.getImprovementPct(), updatedWealthYearly.getNotice(), updatedWealthYearly.getWealthyearlyId(), updatedWealthYearly.getUserId()) != -1) {
                 //Adjust the value for improvementPct of the latest yearly wealth item (of the current year). 
                 this.wealthYearlyService.updateImprovementPct(updatedWealthYearly.getUserId());
