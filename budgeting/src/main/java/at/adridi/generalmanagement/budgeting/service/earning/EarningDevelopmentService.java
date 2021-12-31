@@ -94,7 +94,7 @@ public class EarningDevelopmentService {
     public void doEarningDevelopmentUpdate(int userId) {
         Date currentDate = new Date();
         SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-        SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
         int currentMonth = Integer.parseInt(monthFormat.format(currentDate));
         int currentYear = Integer.parseInt(yearFormat.format(currentDate));
         EarningDevelopment earningDevelopmentLastItem = this.earningDevelopmentRepository.getLastEarningDevelopmentRow(userId).orElse(new EarningDevelopment());
@@ -105,38 +105,52 @@ public class EarningDevelopmentService {
             int lastSavedYear = earningDevelopmentLastItem.getYear();
             int amountOfUnsavedMonths = 0;
             int amountOfUnsavedYears = currentYear - lastSavedYear;
-            //iteration variables save the month and year position where the update process is currently at. 
-            int iterationMonth = lastSavedMonth + 1;
-            int iterationYear = lastSavedYear;
 
-            //Create EarningDevelopment items for all passed months since the last saved month and year
+            //iteration variables save the month and year position where the update process is currently at. 
+            int iterationMonth = 0;
+            int iterationYear = lastSavedYear;
+            if (lastSavedMonth == 12) {
+                iterationMonth = 1;
+                iterationYear = lastSavedYear++;
+            } else {
+                iterationMonth = lastSavedMonth + 1;
+            }
+
+            //Create ExpenseDevelopment items for all passed months since the last saved month and year till to the current month and year (included)
             if (amountOfUnsavedYears > 0) {
-                //Calculate: First unsaved year
-                amountOfUnsavedMonths = 12 - lastSavedMonth;
-                if (amountOfUnsavedYears > 1) {
-                    amountOfUnsavedMonths += (12 * amountOfUnsavedYears);
+                //Calculate: All of the unsaved years and months
+                while (!(iterationYear >= currentYear && iterationMonth >= currentMonth)) {
+                    int earningSum = 0;
+                    try {
+                        earningSum = this.earningService.getSumOfSingleAndCustomEarningsByCertainMonthYear(iterationMonth, iterationYear, userId);
+                    } catch (DataValueNotFoundException e) {
+
+                    }
+                    this.save(new EarningDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, earningSum, userId));
+                    if (iterationMonth >= 12) {
+                        //Go to next year
+                        iterationMonth = 1;
+                        iterationYear++;
+                    } else {
+                        iterationMonth++;
+                    }
                 }
-                //Calculated Last unsaved year
-                amountOfUnsavedMonths += currentMonth;
             } else {
                 //Create EarningDevelopment items for all passed months since the last saved month of the current year
                 amountOfUnsavedMonths = currentMonth - lastSavedMonth;
-            }
 
-            for (; amountOfUnsavedMonths > 0; amountOfUnsavedMonths--) {
-                int earningSum = 0;
-                try {
-                    earningSum = this.earningService.getSumOfSingleAndCustomEarningsByCertainMonthYear(iterationMonth, iterationYear, userId);
-                } catch (DataValueNotFoundException e) {
+                for (; amountOfUnsavedMonths > 0; amountOfUnsavedMonths--) {
+                    int earningSum = 0;
+                    try {
+                        earningSum = this.earningService.getSumOfSingleAndCustomEarningsByCertainMonthYear(iterationMonth, iterationYear, userId);
+                    } catch (DataValueNotFoundException e) {
 
-                }
-                this.save(new EarningDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, earningSum, userId));
-                if (iterationMonth == 12) {
-                    //Go to next year
-                    iterationMonth = 1;
-                    iterationYear++;
-                } else {
+                    }
+                    this.save(new EarningDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, earningSum, userId));
                     iterationMonth++;
+                    if (iterationMonth >= 12) {
+                        amountOfUnsavedMonths=0;
+                    }
                 }
             }
         } else {

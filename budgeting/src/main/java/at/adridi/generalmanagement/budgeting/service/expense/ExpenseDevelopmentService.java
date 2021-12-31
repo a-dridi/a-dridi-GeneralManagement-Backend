@@ -97,7 +97,7 @@ public class ExpenseDevelopmentService {
     public void doExpenseDevelopmentUpdate(int userId) {
         Date currentDate = new Date();
         SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-        SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
         int currentMonth = Integer.parseInt(monthFormat.format(currentDate));
         int currentYear = Integer.parseInt(yearFormat.format(currentDate));
         ExpenseDevelopment expenseDevelopmentLastItem = this.expenseDevelopmentRepository.getLastExpenseDevelopmentRow(userId).orElse(new ExpenseDevelopment());
@@ -106,40 +106,53 @@ public class ExpenseDevelopmentService {
         if (expenseDevelopmentLastItem.getDateDisplay() != null && !expenseDevelopmentLastItem.getDateDisplay().equals("")) {
             int lastSavedMonth = expenseDevelopmentLastItem.getMonth();
             int lastSavedYear = expenseDevelopmentLastItem.getYear();
-            int amountOfUnsavedMonths = 0;
             int amountOfUnsavedYears = currentYear - lastSavedYear;
-            //iteration variables save the month and year position where the update process is currently at. 
-            int iterationMonth = lastSavedMonth + 1;
-            int iterationYear = lastSavedYear;
+            int amountOfUnsavedMonths = 0;
 
-            //Create ExpenseDevelopment items for all passed months since the last saved month and year
+            //iteration variables save the month and year position where the update process is currently at. 
+            int iterationMonth = 0;
+            int iterationYear = lastSavedYear;
+            if (lastSavedMonth == 12) {
+                iterationMonth = 1;
+                iterationYear = lastSavedYear++;
+            } else {
+                iterationMonth = lastSavedMonth + 1;
+            }
+
+            //Create ExpenseDevelopment items for all passed months since the last saved month and year till to the current month and year (included)
             if (amountOfUnsavedYears > 0) {
-                //Calculate: First unsaved year
-                amountOfUnsavedMonths = 12 - lastSavedMonth;
-                if (amountOfUnsavedYears > 1) {
-                    amountOfUnsavedMonths += (12 * amountOfUnsavedYears);
-                }
-                //Calculated Last unsaved year
-                amountOfUnsavedMonths += currentMonth;
+                //Calculate: All of the unsaved years and months
+                while(!(iterationYear >= currentYear && iterationMonth >= currentMonth)) {
+                    int expenseSum = 0;
+                    try {
+                        expenseSum = this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonthYear(iterationMonth, iterationYear, userId);
+                    } catch (DataValueNotFoundException e) {
+
+                    }
+                    this.save(new ExpenseDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, expenseSum, userId));
+                    if (iterationMonth >= 12) {
+                        //Go to next year
+                        iterationMonth = 1;
+                        iterationYear++;
+                    } else {
+                        iterationMonth++;
+                    }
+                } 
             } else {
                 //Create ExpenseDevelopment items for all passed months since the last saved month of the current year
                 amountOfUnsavedMonths = currentMonth - lastSavedMonth;
-            }
+                for (; amountOfUnsavedMonths > 0; amountOfUnsavedMonths--) {
+                    int expenseSum = 0;
+                    try {
+                        expenseSum = this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonthYear(iterationMonth, iterationYear, userId);
+                    } catch (DataValueNotFoundException e) {
 
-            for (; amountOfUnsavedMonths > 0; amountOfUnsavedMonths--) {
-                int expenseSum = 0;
-                try {
-                    expenseSum = this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonthYear(iterationMonth, iterationYear, userId);
-                } catch (DataValueNotFoundException e) {
-
-                }
-                this.save(new ExpenseDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, expenseSum, userId));
-                if (iterationMonth == 12) {
-                    //Go to next year
-                    iterationMonth = 1;
-                    iterationYear++;
-                } else {
+                    }
+                    this.save(new ExpenseDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, expenseSum, userId));
                     iterationMonth++;
+                    if (iterationMonth >= 12) {
+                        amountOfUnsavedMonths=0;
+                    }
                 }
             }
         } else {
