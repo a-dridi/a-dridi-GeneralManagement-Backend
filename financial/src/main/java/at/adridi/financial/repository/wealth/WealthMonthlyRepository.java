@@ -22,8 +22,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WealthMonthlyRepository extends JpaRepository<WealthMonthly, Long> {
 
-    @Query(value = "SELECT * FROM Wealth_Monthly WHERE month_year=?1 AND year_date=?2 AND user_id=?3", nativeQuery = true)
-    Optional<WealthMonthly> findByMonthDateAndYearDate(int monthDate, int yearDate, int userId);
+    @Query(value = "SELECT * FROM Wealth_Monthly WHERE month_date=?1 AND year_date=?2 AND user_id=?3", nativeQuery = true)
+    Optional<WealthMonthly> getByMonthDateAndYearDate(int monthDate, int yearDate, int userId);
 
     Optional<WealthMonthly> findByWealthmonthlyId(Long wealthmonthlyId);
 
@@ -33,7 +33,7 @@ public interface WealthMonthlyRepository extends JpaRepository<WealthMonthly, Lo
     @Query(value = "SELECT * FROM Wealth_Monthly WHERE user_id = ?1 ORDER BY wealthmonthly_id DESC LIMIT 2", nativeQuery = true)
     Optional<ArrayList<WealthMonthly>> getLatest2WealthMonthlyOfUser(int userId);
 
-    @Query(value = "SELECT * FROM Wealth_Monthly WHERE user_id=?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM Wealth_Monthly WHERE user_id=?1 ORDER BY wealthmonthly_id DESC", nativeQuery = true)
     Optional<ArrayList<WealthMonthly>> getAllWealthMonthlyList(int userId);
 
     @Query(value = "SELECT * FROM Wealth_Monthly WHERE year_date=?1 AND user_id=?2 ", nativeQuery = true)

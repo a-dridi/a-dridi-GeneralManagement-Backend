@@ -95,7 +95,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     Optional<Integer> getSumExpensesByTimerangeIdExpenseCategoryId(Long timerangeId, int userId, Long expenseCategoryId);
 
     @Query(value = "SELECT SUM(cent_value) FROM Expense WHERE expense_timerange_timerange_id = ?1 AND expense_category_expense_category_id = ?2 AND (EXTRACT(month from payment_date) = ?3) AND user_id = ?4 AND deleted=false", nativeQuery = true)
-    Optional<Integer> getSumByCertainTimerangeAndCategoryAndCertainMonth(long expenseTimerangeId, long expenseCategoriyId, int month, int userId);
+    Optional<Integer> getSumByCertainTimerangeAndCategoryAndCertainMonth(long expenseTimerangeId, long expenseCategoryId, int month, int userId);
+
+    @Query(value = "SELECT SUM(cent_value) FROM Expense WHERE expense_timerange_timerange_id = ?1 AND expense_category_expense_category_id = ?2 AND (EXTRACT(month from payment_date) = ?3) AND (EXTRACT(year from payment_date) =?4) AND user_id = ?5 AND deleted=false", nativeQuery = true)
+    Optional<Integer> getSumByCertainTimerangeAndCategoryAndCertainMonthYear(long expenseTimerangeId, long expenseCategoryId, int month, int year, int userId);
 
     @Query(value = "SELECT sum(cent_value) FROM Expense WHERE (EXTRACT(year from payment_date)=?1) AND expense_timerange_timerange_id=1 AND expense_category_expense_category_id = ?2 AND user_id=?3 AND deleted=false", nativeQuery = true)
     Optional<Integer> getSumSingleExpensesByYearCategoryId(int year, long categoryId, int userId);

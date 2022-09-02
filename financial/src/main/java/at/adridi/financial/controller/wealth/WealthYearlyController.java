@@ -85,16 +85,16 @@ public class WealthYearlyController {
         WealthYearly updatedWealthYearly;
         try {
             updatedWealthYearly = objectMapper.readValue(updatedWealthYearlyJson, WealthYearly.class);
-            /*
+
             if (updatedWealthYearly.getDifferenceCent() == 0) {
                 updatedWealthYearly.setDifferenceCent(updatedWealthYearly.getExpenseCent() - updatedWealthYearly.getEarningCent());
             }
-             */
-            updatedWealthYearly.setDifferenceCent(updatedWealthYearly.getExpenseCent() - updatedWealthYearly.getEarningCent());
+            //updatedWealthYearly.setDifferenceCent(updatedWealthYearly.getExpenseCent() - updatedWealthYearly.getEarningCent());
 
-            if (this.wealthYearlyService.updateWealthYearlyTableData(updatedWealthYearly.getYearDate(), updatedWealthYearly.getExpenseCent(), updatedWealthYearly.getEarningCent(), updatedWealthYearly.getDifferenceCent(), updatedWealthYearly.getImprovementPct(), updatedWealthYearly.getNotice(), updatedWealthYearly.getWealthyearlyId(), updatedWealthYearly.getUserId()) != -1) {
-                //Adjust the value for improvementPct of the latest yearly wealth item (of the current year). 
-                this.wealthYearlyService.updateImprovementPct(updatedWealthYearly.getUserId());
+            int previousYear = updatedWealthYearly.getYearDate() - 1;
+            double improvementPct = this.wealthYearlyService.getImprovementPct(previousYear, updatedWealthYearly);
+
+            if (this.wealthYearlyService.updateWealthYearlyTableData(updatedWealthYearly.getYearDate(), updatedWealthYearly.getExpenseCent(), updatedWealthYearly.getEarningCent(), updatedWealthYearly.getDifferenceCent(), improvementPct, updatedWealthYearly.getNotice(), updatedWealthYearly.getWealthyearlyId(), updatedWealthYearly.getUserId()) != -1) {
                 return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Wealth Yearly updated."));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Wealth Yearly could not be updated!"));

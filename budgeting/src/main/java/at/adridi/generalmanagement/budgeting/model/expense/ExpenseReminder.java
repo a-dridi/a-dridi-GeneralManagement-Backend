@@ -8,9 +8,9 @@ package at.adridi.generalmanagement.budgeting.model.expense;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.concurrent.ScheduledFuture;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -54,7 +54,7 @@ public class ExpenseReminder implements Serializable {
     @Basic
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = JsonFormat.DEFAULT_TIMEZONE)
     private Date payedDate;
-
+    
     public ExpenseReminder(Expense expense, Date dueDate, Date payedDate) {
         this.expense = expense;
         this.dueDate = dueDate;

@@ -14,6 +14,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,13 +32,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames={"app_table", "user_id"})})
 public class AppDatabaseNote {
 
     @Id
     @SequenceGenerator(name = "pk_appdatabase_sequence", sequenceName = "appdatabase_id_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_appdatabase_sequence")
     private Long id;
-    @Column(unique = true)
+    @Column(name = "app_table") 
     private String appTable;
     private String noteText;
 
@@ -44,5 +47,6 @@ public class AppDatabaseNote {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date date;
 
+    @Column(name = "user_id")
     private Integer userId;
 }

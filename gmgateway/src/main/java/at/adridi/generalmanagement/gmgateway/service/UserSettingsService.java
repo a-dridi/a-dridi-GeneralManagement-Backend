@@ -118,6 +118,10 @@ public class UserSettingsService {
         defaultUserSettings.add(new UserSetting("person1Ratio", "50", userId));
         defaultUserSettings.add(new UserSetting("person2Name", "Person 2", userId));
         defaultUserSettings.add(new UserSetting("person2Ratio", "50", userId));
+        defaultUserSettings.add(new UserSetting("expenseReminderMailServer", "mailserver.tld", userId));
+        defaultUserSettings.add(new UserSetting("expenseReminderMailUsername", "", userId));
+        defaultUserSettings.add(new UserSetting("expenseReminderMailPassword", "", userId));
+        defaultUserSettings.add(new UserSetting("expenseReminderMailPort", "465", userId));
 
         for (UserSetting userSetting : defaultUserSettings) {
             this.addNewUserSetting(userSetting);

@@ -9,13 +9,13 @@ import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundExcepti
 import at.adridi.generalmanagement.budgeting.model.expense.Expense;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseCategory;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseGraph;
-import at.adridi.generalmanagement.budgeting.model.expense.ExpenseReminder;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseTimerange;
 import at.adridi.generalmanagement.budgeting.repository.expense.ExpenseRepository;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import lombok.NoArgsConstructor;
@@ -257,8 +257,8 @@ public class ExpenseService {
             if ((oldExpenseCategory != null && !oldExpenseCategory.getCategoryTitle().equals("")) && (newExpenseCategory != null && !newExpenseCategory.getCategoryTitle().equals(""))) {
                 try {
                     this.expenseRepository.updateCategoryOfAllExpenses(newExpenseCategoryId, oldExpenseCategoryId, userId);
-                    this.expenseCategoryService.deleteById(oldExpenseCategoryId);
                     this.expenseBudgetService.deleteByExpenseCategory(oldExpenseCategory, userId);
+                    this.expenseCategoryService.deleteById(oldExpenseCategoryId);
                     return 0;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -306,7 +306,7 @@ public class ExpenseService {
      */
     public List<ExpenseGraph> getMonthlySumExpenses(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             List<ExpenseGraph> monthlyExpenses = new ArrayList();
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 int monthlySum = 0;
@@ -338,7 +338,7 @@ public class ExpenseService {
      */
     public List<ExpenseGraph> getYearlySumExpenses(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             List<ExpenseGraph> yearlyExpenses = new ArrayList();
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 int yearlySum = 0;
@@ -371,7 +371,7 @@ public class ExpenseService {
      */
     public List<ExpenseGraph> getSumExpensesOfCurrentYear(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             List<ExpenseGraph> currentYearExpenses = new ArrayList();
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 int currentYearSum = 0;
@@ -407,7 +407,7 @@ public class ExpenseService {
      */
     public int getMonthlyRecurringExpensesSum(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             int monthlySum = 0;
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 monthlySum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 30;
@@ -437,7 +437,7 @@ public class ExpenseService {
      */
     public int getYearlyRecurringExpensesSum(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             int yearlySum = 0;
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
                 yearlySum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 365;
@@ -459,20 +459,20 @@ public class ExpenseService {
     }
 
     /**
-     * Get sum of current expenses this month. All recurring expenses counted to
-     * a monthly basis. Single expenses of the current month are added as well.
+     * Get sum of current expenses this month and year. All recurring expenses
+     * counted to a monthly basis. Single expenses of the current month are
+     * added as well.
      *
      * @param userId
      * @return 0 if it is not available.
      */
     public int getCurrentMonthExpenses(int userId) {
         try {
-            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory();
+            List<ExpenseCategory> allExpenseCategories = this.expenseCategoryService.getAllExpenseCategory(userId);
             int currentMonthSum = 0;
             for (ExpenseCategory expenseCategory : allExpenseCategories) {
-                SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-                int currentMonth = Integer.parseInt(monthFormat.format(Calendar.getInstance().getTime()));
-                currentMonthSum += this.expenseRepository.getSumSingleExpensesByMonth(currentMonth, userId).orElse(0);
+                LocalDate currentDate = LocalDate.now();
+                currentMonthSum += this.getSumOfSingleAndCustomExpensesByCertainMonthYear(currentDate.getMonthValue(), currentDate.getYear(), userId);
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 30;
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 4;
                 currentMonthSum += (this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategory.getExpenseCategoryId())).orElse(0) * 2;
@@ -492,9 +492,9 @@ public class ExpenseService {
     }
 
     /**
-     * Get sum of current expenses this month of an expense category id. All
-     * recurring expenses counted to a monthly basis. Single expenses of the
-     * current month are added as well.
+     * Get sum of current expenses this month and year of an expense category
+     * id. All recurring expenses counted to a monthly basis. Single expenses of
+     * the current month are added as well.
      *
      * @param long earningCategoryId
      * @param userId
@@ -503,9 +503,8 @@ public class ExpenseService {
     public int getCurrentMonthExpensesOfExpenseCategory(long expenseCategoryId, int userId) {
         try {
             int currentMonthSum = 0;
-            SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-            int currentMonth = Integer.parseInt(monthFormat.format(Calendar.getInstance().getTime()));
-            currentMonthSum += this.expenseRepository.getSumByCertainTimerangeAndCategoryAndCertainMonth(1L, expenseCategoryId, currentMonth, userId).orElse(0);
+            LocalDate currentDate = LocalDate.now();
+            currentMonthSum += this.expenseRepository.getSumByCertainTimerangeAndCategoryAndCertainMonthYear(1L, expenseCategoryId, currentDate.getMonthValue(), currentDate.getYear(), userId).orElse(0);
             currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategoryId).orElse(0) * 30;
             currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategoryId).orElse(0) * 4;
             currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategoryId).orElse(0) * 2;

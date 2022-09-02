@@ -26,11 +26,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class ExpenseTimerange implements Serializable{
+public class ExpenseTimerange implements Serializable {
 
+    /**
+     * The following Expense Timerange IDs are used: 1 for "one time" expense,
+     * 2->daily, 3-> weekly, 4-> biweekly, 5-> monthly, 6->every 2 months,
+     * 7->every quartal, 8-> every 6 months, 9->yearly, 10->every 2 years,
+     * 11->every 5 years, 12->custom.
+     */
     @Id
-    @SequenceGenerator(name="pk_expensetimerange_sequence", sequenceName="expensetimerange_id_seq", allocationSize=1)
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expensetimerange_sequence")
+    @SequenceGenerator(name = "pk_expensetimerange_sequence", sequenceName = "expensetimerange_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_expensetimerange_sequence")
     private Long timerangeId;
 
     @Column(unique = true)

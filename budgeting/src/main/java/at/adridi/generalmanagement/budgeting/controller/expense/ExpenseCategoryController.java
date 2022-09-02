@@ -12,6 +12,7 @@ import at.adridi.generalmanagement.budgeting.service.expense.ExpenseCategoryServ
 import at.adridi.generalmanagement.budgeting.util.ApiEndpoints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -41,11 +42,11 @@ public class ExpenseCategoryController {
     @Autowired
     private ExpenseCategoryService expenseCategoryService;
 
-    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/all")
-    public ResponseEntity<List<ExpenseCategory>> getAllExpenseCategory() {
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/all/{userId}")
+    public ResponseEntity<List<ExpenseCategory>> getAllExpenseCategory(@PathVariable int userId) {
         List<ExpenseCategory> expenseCategoryList = new ArrayList<>();
         try {
-            expenseCategoryList = this.expenseCategoryService.getAllExpenseCategory();
+            expenseCategoryList = this.expenseCategoryService.getAllExpenseCategory(userId);
         } catch (DataValueNotFoundException e) {
         }
         if (!CollectionUtils.isEmpty(expenseCategoryList)) {
@@ -64,34 +65,35 @@ public class ExpenseCategoryController {
         }
     }
 
-    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/get/byTitle/{title}")
-    public ResponseEntity<ExpenseCategory> getAllExpenseCategoryByTitle(@PathVariable String title) {
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/get/byTitle/{title}/{userId}")
+    public ResponseEntity<ExpenseCategory> getAllExpenseCategoryByTitle(@PathVariable String title, @PathVariable int userId) {
         try {
-            return status(HttpStatus.OK).body(this.expenseCategoryService.getExpenseCategoryByTitle(title));
+            return status(HttpStatus.OK).body(this.expenseCategoryService.getExpenseCategoryByTitle(title, userId));
         } catch (DataValueNotFoundException e) {
             return status(HttpStatus.BAD_REQUEST).body(new ExpenseCategory());
         }
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/add")
-    public ResponseEntity<ExpenseCategory> addExpenseCategory(@RequestBody String newExpenseCategoryString) {
-        if (newExpenseCategoryString != null || newExpenseCategoryString.trim().equals("")) {
-            ExpenseCategory newExpenseCategory = new ExpenseCategory();
-            newExpenseCategory.setCategoryTitle(newExpenseCategoryString);
+    public ResponseEntity<ExpenseCategory> addExpenseCategory(@RequestBody String newExpenseCategoryJson) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            ExpenseCategory newExpenseCategory = objectMapper.readValue(newExpenseCategoryJson, ExpenseCategory.class);
             ExpenseCategory createdExpenseCategory = this.expenseCategoryService.save(newExpenseCategory);
             if (createdExpenseCategory != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(createdExpenseCategory);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ExpenseCategory());
             }
-        } else {
+        } catch (IOException ex) {
+            Logger.getLogger(ExpenseCategoryController.class.getName()).log(Level.SEVERE, null, ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ExpenseCategory());
         }
-
     }
 
     @PostMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/update")
-    public ResponseEntity<ExpenseCategory> updateExpenseCategory(@RequestBody String updatedExpenseCategoryString) {
+    public ResponseEntity<ExpenseCategory> updateExpenseCategory(@RequestBody String updatedExpenseCategoryString
+    ) {
         ObjectMapper objectMapper = new ObjectMapper();
         ExpenseCategory updatedExpenseCategory;
         try {
@@ -109,7 +111,8 @@ public class ExpenseCategoryController {
     }
 
     @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/delete/byId/{expenseCategoryId}")
-    public ResponseEntity<ResponseMessage> deleteExpenseCategoryById(@PathVariable Long expenseCategoryId) {
+    public ResponseEntity<ResponseMessage> deleteExpenseCategoryById(@PathVariable Long expenseCategoryId
+    ) {
         if (this.expenseCategoryService.deleteById(expenseCategoryId)) {
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Your expense category was deleted successfully."));
         } else {
@@ -117,9 +120,10 @@ public class ExpenseCategoryController {
         }
     }
 
-    @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/delete/byTitle/{title}")
-    public ResponseEntity<ResponseMessage> deleteExpenseCategoryByTitle(@PathVariable String title) {
-        if (this.expenseCategoryService.deleteByTitle(title)) {
+    @DeleteMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSECATEGORY + "/delete/byTitle/{title}/{userId}")
+    public ResponseEntity<ResponseMessage> deleteExpenseCategoryByTitle(@PathVariable String title, @PathVariable int userId
+    ) {
+        if (this.expenseCategoryService.deleteByTitle(title, userId)) {
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Your expense category was deleted successfully."));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Expense category does not exists!"));

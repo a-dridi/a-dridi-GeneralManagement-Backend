@@ -26,7 +26,7 @@ public interface WealthYearlyRepository extends JpaRepository<WealthYearly, Long
     @Query(value = "SELECT * FROM Wealth_Yearly WHERE user_id = ?1 ORDER BY wealthyearly_id DESC LIMIT 2", nativeQuery = true)
     Optional<ArrayList<WealthYearly>> getLatest2WealthYearlyOfUser(int userId);
 
-    @Query(value = "SELECT * FROM Wealth_Yearly WHERE user_id=?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM Wealth_Yearly WHERE user_id=?1 ORDER BY wealthyearly_id DESC", nativeQuery = true)
     Optional<ArrayList<WealthYearly>> getAllWealthYearlyList(int userId);
 
     @Query(value = "SELECT * FROM Wealth_Yearly WHERE year_date=?1 AND user_id=?2", nativeQuery = true)

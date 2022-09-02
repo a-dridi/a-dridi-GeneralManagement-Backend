@@ -6,16 +6,12 @@
 package at.adridi.generalmanagement.budgeting.service.expense;
 
 import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundException;
-import at.adridi.generalmanagement.budgeting.model.expense.Expense;
-import at.adridi.generalmanagement.budgeting.model.expense.ExpenseCategory;
 import at.adridi.generalmanagement.budgeting.model.expense.ExpenseDevelopment;
-import at.adridi.generalmanagement.budgeting.model.expense.ExpenseGraph;
 import at.adridi.generalmanagement.budgeting.repository.expense.ExpenseDevelopmentRepository;
-import com.sun.xml.bind.v2.TODO;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +71,7 @@ public class ExpenseDevelopmentService {
     public boolean isUpdateNeeded(int userId) {
         Date currentDate = new Date();
         SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-        SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
 
         List<ExpenseDevelopment> expenseDevelopmentOfCurrentMonthYear = this.expenseDevelopmentRepository.findByMonthAndYearAndUserId(Integer.parseInt(monthFormat.format(currentDate)), Integer.parseInt(yearFormat.format(currentDate)), userId).orElse(new ArrayList<>());
         if (CollectionUtils.isEmpty(expenseDevelopmentOfCurrentMonthYear)) {
@@ -114,7 +110,7 @@ public class ExpenseDevelopmentService {
             int iterationYear = lastSavedYear;
             if (lastSavedMonth == 12) {
                 iterationMonth = 1;
-                iterationYear = lastSavedYear++;
+                iterationYear = lastSavedYear + 1;
             } else {
                 iterationMonth = lastSavedMonth + 1;
             }
@@ -122,13 +118,14 @@ public class ExpenseDevelopmentService {
             //Create ExpenseDevelopment items for all passed months since the last saved month and year till to the current month and year (included)
             if (amountOfUnsavedYears > 0) {
                 //Calculate: All of the unsaved years and months
-                while(!(iterationYear >= currentYear && iterationMonth >= currentMonth)) {
+                while (!(iterationYear >= currentYear && iterationMonth > currentMonth)) {
                     int expenseSum = 0;
                     try {
                         expenseSum = this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonthYear(iterationMonth, iterationYear, userId);
                     } catch (DataValueNotFoundException e) {
 
                     }
+
                     this.save(new ExpenseDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, expenseSum, userId));
                     if (iterationMonth >= 12) {
                         //Go to next year
@@ -137,10 +134,11 @@ public class ExpenseDevelopmentService {
                     } else {
                         iterationMonth++;
                     }
-                } 
+                }
             } else {
                 //Create ExpenseDevelopment items for all passed months since the last saved month of the current year
                 amountOfUnsavedMonths = currentMonth - lastSavedMonth;
+
                 for (; amountOfUnsavedMonths > 0; amountOfUnsavedMonths--) {
                     int expenseSum = 0;
                     try {
@@ -151,7 +149,7 @@ public class ExpenseDevelopmentService {
                     this.save(new ExpenseDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, expenseSum, userId));
                     iterationMonth++;
                     if (iterationMonth >= 12) {
-                        amountOfUnsavedMonths=0;
+                        amountOfUnsavedMonths = 0;
                     }
                 }
             }
@@ -198,26 +196,15 @@ public class ExpenseDevelopmentService {
             }
             Date currentDate = new Date();
             SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-            SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
-            int currentMonth = Integer.parseInt(monthFormat.format(currentDate));
-            int currentYear = Integer.parseInt(yearFormat.format(currentDate));
+            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+            int endCurrentMonth = Integer.parseInt(monthFormat.format(currentDate));
+            int endCurrentYear = Integer.parseInt(yearFormat.format(currentDate));
 
-            int monthsOfPreviousYears = monthsAmount - currentMonth;
-            //Amount of years in monthsOfPreviousYears
-            int completeYearsAmount = (int) monthsOfPreviousYears / 12;
-            int startYear;
-            int startMonth;
+            //Calculate the year and month before monthsAmount of the current year and month. 
+            LocalDate startLocalDate = LocalDate.now();
+            startLocalDate.minusMonths(monthsAmount);
 
-            //Calculate the year and month before monthsAmount of the current year and month. Subtract amount of months by the amount of full years. And the end calculate the start month in the year left in the calculation. 
-            if (completeYearsAmount > 0) {
-                startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
-                startMonth = monthsOfPreviousYears - (12 * completeYearsAmount);
-                startMonth = 12 - startMonth;
-            } else {
-                startYear = currentYear;
-                startMonth = currentMonth - monthsAmount;
-            }
-            return this.expenseDevelopmentRepository.getExpenseDevelopmentItemsForMonthAndYearRange(startMonth, currentMonth, startYear, currentYear, userId).orElse(new ArrayList<>());
+            return this.expenseDevelopmentRepository.getExpenseDevelopmentItemsForMonthAndYearRange(startLocalDate.getMonthValue(), endCurrentMonth, startLocalDate.getYear(), endCurrentYear, userId).orElse(new ArrayList<>());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -251,16 +238,16 @@ public class ExpenseDevelopmentService {
                 return new ArrayList<>();
             }
             Date currentDate = new Date();
-            SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
             int currentYear = Integer.parseInt(yearFormat.format(currentDate));
             int iterationYear = currentYear;
             int yearCounter = yearsAmount;
             List<ExpenseDevelopment> yearlyExpenseDevelopmentList = new ArrayList<>();
             do {
-                yearlyExpenseDevelopmentList.add(new ExpenseDevelopment(0, iterationYear, "" + iterationYear, this.expenseDevelopmentRepository.getCentSumOfExpenseDevelopmentOfCertainYear(iterationYear, userId).orElse(0), userId));
+                yearlyExpenseDevelopmentList.add(new ExpenseDevelopment(yearCounter, iterationYear, "" + iterationYear, this.expenseDevelopmentRepository.getCentSumOfExpenseDevelopmentOfCertainYear(iterationYear, userId).orElse(0), userId));
                 yearCounter--;
                 iterationYear--;
-            } while (yearCounter >= yearsAmount);
+            } while (yearCounter > 0);
 
             return yearlyExpenseDevelopmentList;
         } catch (Exception e) {

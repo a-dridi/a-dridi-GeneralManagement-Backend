@@ -66,7 +66,11 @@ public class WealthYearlyService {
      * @return
      */
     public List<WealthYearly> getAllWealthYearly(int userId) {
-        this.updateWealthYearlyState(userId);
+        try {
+            this.updateWealthYearlyState(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return this.wealthYearlyRepository.getAllWealthYearlyList(userId).orElseThrow(() -> new DataValueNotFoundException("User " + userId + " does Not have Wealth Yearly items or does not exist"));
     }
 
@@ -98,6 +102,7 @@ public class WealthYearlyService {
             int currentYear = Integer.parseInt(formatYYYY.format(currentDate));
 
             while (currentYear != latestYear) {
+                latestYear++;
                 WealthYearly newWealthYearly = new WealthYearly();
                 newWealthYearly.setYearDate(latestYear);
                 int expenseCentLatestYear = this.wealthMonthlyRepository.getExpenseCentSumOfYearDate(latestYear, userId);
@@ -108,13 +113,34 @@ public class WealthYearlyService {
                 newWealthYearly.setDifferenceCent(differenceCentLatestYear);
                 newWealthYearly.setUserId(userId);
                 this.save(newWealthYearly);
-                latestYear++;
             }
         }
 
         return true;
     }
 
+    
+    
+    /**
+     * Get the ImprovementPct value of the latest wealth yearly by calculating
+     * the change compared to the previous year of this updated yearly wealth
+     * item.
+     *
+     * @return
+     */
+    @Transactional
+    public double getImprovementPct(int previousYear, WealthYearly updatedWealthMonthly) {
+        WealthYearly previousWealthItem = this.wealthYearlyRepository.getWealthYearlyByYearDate(previousYear, updatedWealthMonthly.getUserId()).orElse(null);
+
+        if (previousWealthItem == null) {
+            return 0.0;
+        } else {
+            double improvementPct = ((double) (updatedWealthMonthly.getDifferenceCent() - previousWealthItem.getDifferenceCent()) / (double) previousWealthItem.getDifferenceCent());
+            return improvementPct;
+        }
+
+    }
+    
     /**
      * Update the ImprovementPct value of the latest wealth yearly.
      *

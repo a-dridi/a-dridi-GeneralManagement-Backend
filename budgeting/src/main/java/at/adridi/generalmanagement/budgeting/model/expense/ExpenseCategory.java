@@ -12,6 +12,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,14 +28,19 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-public class ExpenseCategory implements Serializable{
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"category_title", "user_id"})})
+public class ExpenseCategory implements Serializable {
 
     @Id
-    @SequenceGenerator(name="pk_expensecategory_sequence", sequenceName="expensecategory_id_seq", allocationSize=1)
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="pk_expensecategory_sequence")
+    @SequenceGenerator(name = "pk_expensecategory_sequence", sequenceName = "expensecategory_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_expensecategory_sequence")
     private Long expenseCategoryId;
 
-    @Column(unique = true)
+    @Column(name = "category_title")
     private String categoryTitle;
+
+    @Column(name = "user_id")
+    private Integer userId;
 
 }

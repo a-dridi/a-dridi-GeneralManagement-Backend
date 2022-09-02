@@ -14,7 +14,7 @@ package at.adridi.generalmanagement.gmgateway.security;
 public class JwtProperties {
     public static final String SECRET = "generalm529232";
     //In milliseconds. 10 hours
-    public static final long EXPIRATION_TIME = 36000000;
+    public static final long EXPIRATION_TIME = 86400000;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
     public static final String HEADER_USERID_STRING="ETag";

@@ -21,9 +21,9 @@ public interface ExpenseCategoryRepository extends JpaRepository<ExpenseCategory
 
     Optional<ExpenseCategory> findByExpenseCategoryId(Long expenseCategoryId);
 
-    Optional<ExpenseCategory> findByCategoryTitle(String categoryTitle);
+    Optional<ExpenseCategory> findByCategoryTitleAndUserId(String categoryTitle, int userId);
 
-    @Query(value = "SELECT * FROM Expense_Category ORDER BY category_title ASC", nativeQuery = true)
-    Optional<ArrayList<ExpenseCategory>> getAllExpenseCategoryList();
+    @Query(value = "SELECT * FROM Expense_Category WHERE user_id = ?1 ORDER BY category_title ASC", nativeQuery = true)
+    Optional<ArrayList<ExpenseCategory>> getAllExpenseCategoryList(int userId);
 
 }

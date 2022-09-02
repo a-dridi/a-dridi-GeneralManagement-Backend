@@ -60,18 +60,18 @@ public class ExpenseCategoryService {
      * @param userId
      * @return
      */
-    public ExpenseCategory getExpenseCategoryByTitle(String title) {
-        return this.expenseCategoryRepository.findByCategoryTitle(title)
+    public ExpenseCategory getExpenseCategoryByTitle(String title, int userId) {
+        return this.expenseCategoryRepository.findByCategoryTitleAndUserId(title, userId)
                 .orElseThrow(() -> new DataValueNotFoundException("Expense Category Does Not Exist"));
     }
 
     /**
-     * Get a List of all saved expense categories
+     * Get a List of all saved expense categories of a user. 
      *
      * @return
      */
-    public List<ExpenseCategory> getAllExpenseCategory() {
-        return this.expenseCategoryRepository.getAllExpenseCategoryList().orElseThrow(() -> new DataValueNotFoundException("Expense Category List could not be loaded!"));
+    public List<ExpenseCategory> getAllExpenseCategory(int userId) {
+        return this.expenseCategoryRepository.getAllExpenseCategoryList(userId).orElseThrow(() -> new DataValueNotFoundException("Expense Category List could not be loaded!"));
     }
 
     /**
@@ -104,12 +104,12 @@ public class ExpenseCategoryService {
      * @return true if successful
      */
     @Transactional()
-    public boolean deleteByTitle(String categoryTitle) {
+    public boolean deleteByTitle(String categoryTitle, int userId) {
         if (categoryTitle == null || categoryTitle.trim().isBlank()) {
             return false;
         }
 
-        ExpenseCategory expenseCategory = this.getExpenseCategoryByTitle(categoryTitle);
+        ExpenseCategory expenseCategory = this.getExpenseCategoryByTitle(categoryTitle, userId);
 
         try {
             this.expenseCategoryRepository.delete(expenseCategory);

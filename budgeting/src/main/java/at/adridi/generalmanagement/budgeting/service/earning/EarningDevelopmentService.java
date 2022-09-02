@@ -7,11 +7,10 @@ package at.adridi.generalmanagement.budgeting.service.earning;
 
 import at.adridi.generalmanagement.budgeting.exceptions.DataValueNotFoundException;
 import at.adridi.generalmanagement.budgeting.model.earning.EarningDevelopment;
-import at.adridi.generalmanagement.budgeting.model.earning.EarningDevelopment;
-import at.adridi.generalmanagement.budgeting.model.expense.ExpenseDevelopment;
 import at.adridi.generalmanagement.budgeting.repository.earning.EarningDevelopmentRepository;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.NoArgsConstructor;
@@ -72,7 +71,7 @@ public class EarningDevelopmentService {
     public boolean isUpdateNeeded(int userId) {
         Date currentDate = new Date();
         SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-        SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
 
         List<EarningDevelopment> earningDevelopmentOfCurrentMonthYear = this.earningDevelopmentRepository.findByMonthAndYearAndUserId(Integer.parseInt(monthFormat.format(currentDate)), Integer.parseInt(yearFormat.format(currentDate)), userId).orElse(new ArrayList<>());
         if (CollectionUtils.isEmpty(earningDevelopmentOfCurrentMonthYear)) {
@@ -111,7 +110,7 @@ public class EarningDevelopmentService {
             int iterationYear = lastSavedYear;
             if (lastSavedMonth == 12) {
                 iterationMonth = 1;
-                iterationYear = lastSavedYear++;
+                iterationYear = lastSavedYear + 1;
             } else {
                 iterationMonth = lastSavedMonth + 1;
             }
@@ -119,7 +118,7 @@ public class EarningDevelopmentService {
             //Create ExpenseDevelopment items for all passed months since the last saved month and year till to the current month and year (included)
             if (amountOfUnsavedYears > 0) {
                 //Calculate: All of the unsaved years and months
-                while (!(iterationYear >= currentYear && iterationMonth >= currentMonth)) {
+                while (!(iterationYear >= currentYear && iterationMonth > currentMonth)) {
                     int earningSum = 0;
                     try {
                         earningSum = this.earningService.getSumOfSingleAndCustomEarningsByCertainMonthYear(iterationMonth, iterationYear, userId);
@@ -149,7 +148,7 @@ public class EarningDevelopmentService {
                     this.save(new EarningDevelopment(iterationMonth, iterationYear, iterationMonth + "/" + iterationYear, earningSum, userId));
                     iterationMonth++;
                     if (iterationMonth >= 12) {
-                        amountOfUnsavedMonths=0;
+                        amountOfUnsavedMonths = 0;
                     }
                 }
             }
@@ -207,26 +206,15 @@ public class EarningDevelopmentService {
             }
             Date currentDate = new Date();
             SimpleDateFormat monthFormat = new SimpleDateFormat("M");
-            SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
-            int currentMonth = Integer.parseInt(monthFormat.format(currentDate));
-            int currentYear = Integer.parseInt(yearFormat.format(currentDate));
+            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+            int endCurrentMonth = Integer.parseInt(monthFormat.format(currentDate));
+            int endCurrentYear = Integer.parseInt(yearFormat.format(currentDate));
 
-            int monthsOfPreviousYears = monthsAmount - currentMonth;
-            //Amount of years in monthsOfPreviousYears
-            int completeYearsAmount = (int) monthsOfPreviousYears / 12;
-            int startYear;
-            int startMonth;
-
-            //Calculate the year and month before monthsAmount of the current year and month. Subtract amount of months by the amount of full years. And the end calculate the start month in the year left in the calculation. 
-            if (completeYearsAmount > 0) {
-                startYear = currentYear - (int) Math.ceil((monthsOfPreviousYears / 12.0));
-                startMonth = monthsOfPreviousYears - (12 * completeYearsAmount);
-                startMonth = 12 - startMonth;
-            } else {
-                startYear = currentYear;
-                startMonth = currentMonth - monthsAmount;
-            }
-            return this.earningDevelopmentRepository.getEarningDevelopmentItemsForMonthAndYearRange(startMonth, currentMonth, startYear, currentYear, userId).orElse(new ArrayList<>());
+            //Calculate the year and month before monthsAmount of the current year and month. 
+            LocalDate startLocalDate = LocalDate.now();
+            startLocalDate.minusMonths(monthsAmount);
+            
+            return this.earningDevelopmentRepository.getEarningDevelopmentItemsForMonthAndYearRange(startLocalDate.getMonthValue(), endCurrentMonth, startLocalDate.getYear(), endCurrentYear, userId).orElse(new ArrayList<>());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -249,16 +237,16 @@ public class EarningDevelopmentService {
                 return new ArrayList<>();
             }
             Date currentDate = new Date();
-            SimpleDateFormat yearFormat = new SimpleDateFormat("YYYY");
+            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
             int currentYear = Integer.parseInt(yearFormat.format(currentDate));
             int iterationYear = currentYear;
             int yearCounter = yearsAmount;
             List<EarningDevelopment> yearlyEarningDevelopmentList = new ArrayList<>();
             do {
-                yearlyEarningDevelopmentList.add(new EarningDevelopment(0, iterationYear, "" + iterationYear, this.earningDevelopmentRepository.getCentSumOfEarningDevelopmentOfCertainYear(iterationYear, userId).orElse(0), userId));
+                yearlyEarningDevelopmentList.add(new EarningDevelopment(yearCounter, iterationYear, "" + iterationYear, this.earningDevelopmentRepository.getCentSumOfEarningDevelopmentOfCertainYear(iterationYear, userId).orElse(0), userId));
                 yearCounter--;
                 iterationYear--;
-            } while (yearCounter >= yearsAmount);
+            } while (yearCounter > 0);
 
             return yearlyEarningDevelopmentList;
         } catch (Exception e) {

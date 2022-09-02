@@ -5,7 +5,11 @@ The backend is programmed in Java and uses Spring Boot. It has a microservices a
 Zuul is used to create the gateway which will be the public access to the other services. 
 All java modules and server are created as executable jar files and contain an embedded tomcat server. These jar files can be deployed as Linux systemd services.
 
-Application in development.
+## Demo Video of the [Frontend](https://github.com/a-dridi/GeneralManagement-Frontend) (English, Intl. version):
+[https://youtu.be/Bk1MI7UNzeM](https://youtu.be/Bk1MI7UNzeM)
+
+## Demo Video of the [Frontend](https://github.com/a-dridi/GeneralManagement-Frontend)(Deutsche Version):
+[https://youtu.be/5Q54V4c5rg0](https://youtu.be/5Q54V4c5rg0)
 
 ## Microservices Architecture
 
@@ -50,14 +54,28 @@ These API end points are available without authentication:
 
 /api/login/
 
-You can login or register a new user account (called owner) which is used to authenticate and it is connected to a virtual points account. 
+You can login or register a new user account (called owner) which is used to authenticate. All data is, then saved for that user. The user can access and edit only his data.  
 
-Registration of a user
+**IMPORTANT:** You need to add a user, to use the backend and frontend of the application "General Management". 
+
+### Registration of a user
 POST /api/registration
-Add your email, password, forename and surname in a JSON format to your POST body. 
 
-Login of a user
+Add your email, password, forename and surname in a JSON format to your POST body, by using this format:
+```
+{
+     "email": "myemail@MYEMAIL.tld",
+     "username": "MY_USERNAME",
+     "password": "MY_PASSWORD",
+     "admin": true,
+     "roles": "ADMIN",
+     "permissions": ""
+}
+```
+
+### Login of a user
 POST /api/login
+
 Add your email and password in a JSON format to your POST body. 
 
 
@@ -69,16 +87,21 @@ Id stands as a place holder for a real id.
 
 ### Get an Expense - GET:
 /api/budgeting/data/expense/get/byId/[ID] 
+
 Example: 
+
 GET /api/budgeting/data/expense/get/byId/2
 
 
 ### Save an Expense - POST:
 /api/budgeting/data/expense/add
+
 Example: 
 POST /api/budgeting/data/expense/add
+
 Add expense values in a JSON format in your body. 
 Example of the JSON body content: 
+```
 {
       title: "Title",
       expenseCategory: {},
@@ -93,6 +116,7 @@ Example of the JSON body content:
       deleted: false,
       userId: 105
 }
+```
 
 All API directives are in the URI: /api/[SERVICE-NAME]/data
 

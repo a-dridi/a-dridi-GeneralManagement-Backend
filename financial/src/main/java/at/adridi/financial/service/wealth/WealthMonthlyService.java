@@ -62,7 +62,11 @@ public class WealthMonthlyService {
      * @return
      */
     public List<WealthMonthly> getAllWealthMonthly(int userId) {
-        this.updateWealthMonthlyState(userId);
+        try {
+            this.updateWealthMonthlyState(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return this.wealthMonthlyRepository.getAllWealthMonthlyList(userId).orElseThrow(() -> new DataValueNotFoundException("User " + userId + " does Not have Wealth Monthly items or does not exist"));
     }
 
@@ -89,13 +93,23 @@ public class WealthMonthlyService {
             int currentMonth = Integer.parseInt(formatMM.format(currentDate));
             int currentYear = Integer.parseInt(formatYYYY.format(currentDate));
 
-            while (currentMonth != latestMonth && currentYear != latestYear) {
+            //Run "add monthly wealth" till to the current month and year
+            while (true) {
+                if (currentMonth == latestMonth && currentYear == latestYear) {
+                    break;
+                }
+
+                if (latestMonth == 12) {
+                    latestMonth = 1;
+                    latestYear++;
+                } else {
+                    latestMonth++;
+                }
                 WealthMonthly newWealthMonthly = new WealthMonthly();
                 newWealthMonthly.setMonthDate(latestMonth);
                 newWealthMonthly.setYearDate(latestYear);
+                newWealthMonthly.setUserId(userId);
                 this.save(newWealthMonthly);
-                latestMonth++;
-                latestYear++;
             }
         }
 
@@ -103,25 +117,23 @@ public class WealthMonthlyService {
     }
 
     /**
-     * Update the ImprovementPct value of the latest wealth monthly.
+     * Get the ImprovementPct value of the latest wealth monthly by calculating
+     * the change compared to the previous month of this updated monthly wealth
+     * item.
      *
      * @return
      */
     @Transactional
-    public boolean updateImprovementPct(int userId) {
-        List<WealthMonthly> latest2WealthMonthlyList = this.wealthMonthlyRepository.getLatest2WealthMonthlyOfUser(userId).orElse(new ArrayList<>());
-        if (!latest2WealthMonthlyList.isEmpty() && latest2WealthMonthlyList.size() >= 2) {
-            //The latest/current wealth monthly item (of the current month and year)
-            WealthMonthly latestWealthMonthly1 = latest2WealthMonthlyList.get(0);
-            //The item before the latest 
-            WealthMonthly latestWealthMonthly2 = latest2WealthMonthlyList.get(1);
-            double calculateImprovementPct = ((latestWealthMonthly1.getDifferenceCent() - latestWealthMonthly2.getDifferenceCent()) / latestWealthMonthly2.getDifferenceCent()) * 100;
-            latestWealthMonthly1.setImprovementPct(calculateImprovementPct);
-            this.save(latestWealthMonthly1);
-            return true;
+    public double getImprovementPct(int previousMonth, int previousYear, WealthMonthly updatedWealthMonthly) {
+        WealthMonthly previousWealthItem = this.wealthMonthlyRepository.getByMonthDateAndYearDate(previousMonth, previousYear, updatedWealthMonthly.getUserId()).orElse(null);
+
+        if (previousWealthItem == null) {
+            return 0.0;
         } else {
-            return false;
+            double improvementPct = ((double) (updatedWealthMonthly.getDifferenceCent() - previousWealthItem.getDifferenceCent()) / (double) previousWealthItem.getDifferenceCent());
+            return improvementPct;
         }
+
     }
 
     /**

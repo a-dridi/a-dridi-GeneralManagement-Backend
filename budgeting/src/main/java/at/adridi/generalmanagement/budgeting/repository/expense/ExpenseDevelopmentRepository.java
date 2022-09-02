@@ -27,10 +27,10 @@ public interface ExpenseDevelopmentRepository extends JpaRepository<ExpenseDevel
 
     Optional<List<ExpenseDevelopment>> findByDateDisplayAndUserId(String dateDisplay, int userId);
 
-    @Query(value = "SELECT * FROM Expense_Development ORDER BY expense_development_id DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM Expense_Development WHERE user_id = ?1 ORDER BY expense_development_id DESC", nativeQuery = true)
     Optional<ArrayList<ExpenseDevelopment>> getAllExpenseDevelopmentList(Integer userId);
 
-    @Query(value = "SELECT * FROM Expense_Development ORDER BY expense_development_id DESC LIMIT 24", nativeQuery = true)
+    @Query(value = "SELECT * FROM Expense_Development WHERE user_id = ?1 ORDER BY expense_development_id DESC LIMIT 24", nativeQuery = true)
     Optional<ArrayList<ExpenseDevelopment>> getLast24ExpenseDevelopmentList(Integer userId);
 
     @Query(value = "SELECT * FROM Expense_Development WHERE user_id = ?1 ORDER BY expense_development_id DESC LIMIT 1", nativeQuery = true)

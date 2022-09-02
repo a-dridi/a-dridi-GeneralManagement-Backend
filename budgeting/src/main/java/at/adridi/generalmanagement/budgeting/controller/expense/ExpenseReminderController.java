@@ -62,6 +62,7 @@ public class ExpenseReminderController {
             Expense expenseOfReminder = this.expenseService.getExpenseById(expenseReminderJSON.getExpenseId());
             
             ExpenseReminder newExpenseReminder = new ExpenseReminder(expenseOfReminder, expenseReminderJSON.getDueDate(), expenseReminderJSON.getPayedDate());
+            //this.expenseReminderService.createReminderProcess(newExpenseReminder);
             ExpenseReminder savedExpenseReminder;
             savedExpenseReminder = this.expenseReminderService.save(newExpenseReminder);
             return ResponseEntity.status(HttpStatus.OK).body(savedExpenseReminder);

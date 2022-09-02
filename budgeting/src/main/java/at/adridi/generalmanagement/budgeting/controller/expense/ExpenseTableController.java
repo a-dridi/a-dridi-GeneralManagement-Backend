@@ -272,10 +272,10 @@ public class ExpenseTableController {
         }
     }
 
-    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/get/sum/single/custom/certainMonth/{month}/{userId}")
-    public ResponseEntity<Integer> getOfCertainMonthSingleAndCustomExpensesSum(@PathVariable int month, @PathVariable int userId) {
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSE + "/get/sum/single/custom/certainMonthYear/{month}/{year}/{userId}")
+    public ResponseEntity<Integer> getOfCertainMonthYearSingleAndCustomExpensesSum(@PathVariable int month, @PathVariable int year, @PathVariable int userId) {
         try {
-            return ResponseEntity.ok(this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonth(month, userId));
+            return ResponseEntity.ok(this.expenseService.getSumOfSingleAndCustomExpensesByCertainMonthYear(month, year, userId));
         } catch (DataValueNotFoundException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);

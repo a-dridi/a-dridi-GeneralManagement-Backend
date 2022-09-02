@@ -113,11 +113,11 @@ public class ExpenseCalendarService {
         int currentYear = 0;
         int dayOfPaymentDate = 0;
         SimpleDateFormat dateFormat = new SimpleDateFormat("d.M.yyyy");
-        SimpleDateFormat calendarDateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        SimpleDateFormat calendarDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
             currentMonth = Integer.parseInt((new SimpleDateFormat("MM")).format(currentDate));
-            currentYear = Integer.parseInt((new SimpleDateFormat("YYYY")).format(currentDate));
+            currentYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(currentDate));
             dayOfPaymentDate = Integer.parseInt((new SimpleDateFormat("dd")).format(paymentDate));
         } catch (Exception e) {
             return new ArrayList<ExpenseCalendar>();

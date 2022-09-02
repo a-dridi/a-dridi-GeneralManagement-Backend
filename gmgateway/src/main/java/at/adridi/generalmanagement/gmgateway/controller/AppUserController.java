@@ -91,6 +91,27 @@ public class AppUserController {
     }
 
     /**
+     * Get user object by user id
+     *
+     * @param userId
+     * @return
+     */
+    @GetMapping("/api/getUserObject/{userId}")
+    public ResponseEntity<AppUser> getUserObjectByUserId(@PathVariable Long userId) {
+        try {
+            AppUser savedUser = this.userService.getUserByUserId(userId);
+            if (savedUser != null) {
+                return ResponseEntity.ok(savedUser);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AppUser());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return status(HttpStatus.BAD_GATEWAY).body(new AppUser());
+        }
+    }
+
+    /**
      * Get user id by passing login credentials.
      *
      * @param userLoginCredentialsJson

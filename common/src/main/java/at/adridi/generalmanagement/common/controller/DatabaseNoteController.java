@@ -76,7 +76,7 @@ public class DatabaseNoteController {
         int resultCode;
         try {
             newDatabaseNote = objectMapper.readValue(newDatabaseNoteJson, AppDatabaseNote.class);
-            resultCode = this.databaseNoteService.save(newDatabaseNote);
+            resultCode = this.databaseNoteService.saveOrUpdate(newDatabaseNote);
         } catch (IOException ex) {
             Logger.getLogger(DatabaseNoteController.class.getName()).log(Level.SEVERE, null, ex);
             resultCode = 4;
@@ -102,7 +102,7 @@ public class DatabaseNoteController {
         AppDatabaseNote updatedDatabaseNote;
         try {
             updatedDatabaseNote = objectMapper.readValue(updatedDatabaseNoteJson, AppDatabaseNote.class);
-            int resultCode = this.databaseNoteService.save(updatedDatabaseNote);
+            int resultCode = this.databaseNoteService.saveOrUpdate(updatedDatabaseNote);
             switch (resultCode) {
                 case 0:
                     return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Database Note update was successful."));

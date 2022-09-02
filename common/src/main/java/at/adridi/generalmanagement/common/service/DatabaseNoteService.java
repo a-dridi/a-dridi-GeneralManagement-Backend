@@ -28,21 +28,31 @@ public class DatabaseNoteService {
     private AppDatabaseNoteRepository databaseNoteRepository;
 
     /**
-     * Save new database note.
+     * Save new database note. Or update database note if it's already existing.
      *
      * @param newDatabaseNote
      * @return 0 if successful. 1: Passed object is null. 2: Saving failed.
      */
-    public Integer save(AppDatabaseNote newDatabaseNote) {
+    public Integer saveOrUpdate(AppDatabaseNote newDatabaseNote) {
         if (newDatabaseNote == null) {
             return 1;
         }
-        AppDatabaseNote savedObject = this.databaseNoteRepository.save(newDatabaseNote);
-        if (savedObject != null) {
+
+        try {
+            AppDatabaseNote updatedDatabaseNote = this.getDatabaseNoteByTable(newDatabaseNote.getAppTable(), newDatabaseNote.getUserId());
+            updatedDatabaseNote.setNoteText(newDatabaseNote.getNoteText());
+            this.databaseNoteRepository.save(updatedDatabaseNote);
             return 0;
-        } else {
-            return 2;
+        } catch (DataValueNotFoundException e) {
+            //Create new database note
+            AppDatabaseNote savedObject = this.databaseNoteRepository.save(newDatabaseNote);
+            if (savedObject != null) {
+                return 0;
+            } else {
+                return 2;
+            }
         }
+
     }
 
     /**

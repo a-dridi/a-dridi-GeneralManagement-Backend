@@ -85,15 +85,21 @@ public class WealthMonthlyController {
         WealthMonthly updatedWealthMonthly;
         try {
             updatedWealthMonthly = objectMapper.readValue(updatedWealthMonthlyJson, WealthMonthly.class);
-            /*
+
             if (updatedWealthMonthly.getDifferenceCent() == 0) {
                 updatedWealthMonthly.setDifferenceCent(updatedWealthMonthly.getEarningCent() - updatedWealthMonthly.getExpenseCent());
             }
-             */
-            updatedWealthMonthly.setDifferenceCent(updatedWealthMonthly.getEarningCent() - updatedWealthMonthly.getExpenseCent());
-            if (this.wealthMonthlyService.updateWealthMonthlyTableData(updatedWealthMonthly.getMonthDate(), updatedWealthMonthly.getYearDate(), updatedWealthMonthly.getExpenseCent(), updatedWealthMonthly.getEarningCent(), updatedWealthMonthly.getDifferenceCent(), updatedWealthMonthly.getImprovementPct(), updatedWealthMonthly.getNotice(), updatedWealthMonthly.getWealthmonthlyId(), updatedWealthMonthly.getUserId()) != -1) {
-                //Adjust the value for improvementPct of the latest monthly wealth item (of the current year and month). 
-                this.wealthMonthlyService.updateImprovementPct(updatedWealthMonthly.getUserId());
+
+            int previousMonth = (updatedWealthMonthly.getMonthDate() - 1);
+            int previousYear = updatedWealthMonthly.getYearDate();
+            if (previousMonth < 1) {
+                previousMonth = 12;
+                previousYear -= 1;
+            }
+
+            double improvementPct = this.wealthMonthlyService.getImprovementPct(previousMonth, previousYear, updatedWealthMonthly);
+
+            if (this.wealthMonthlyService.updateWealthMonthlyTableData(updatedWealthMonthly.getMonthDate(), updatedWealthMonthly.getYearDate(), updatedWealthMonthly.getExpenseCent(), updatedWealthMonthly.getEarningCent(), updatedWealthMonthly.getDifferenceCent(), improvementPct, updatedWealthMonthly.getNotice(), updatedWealthMonthly.getWealthmonthlyId(), updatedWealthMonthly.getUserId()) != -1) {
                 return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("OK. Wealth Monthly updated."));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("ERROR. Wealth Monthly could not be updated!"));
