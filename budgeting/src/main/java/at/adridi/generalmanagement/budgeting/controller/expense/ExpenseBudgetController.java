@@ -43,11 +43,11 @@ public class ExpenseBudgetController {
     @Autowired
     private ExpenseBudgetService expenseBudgetService;
 
-    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEBUDGET + "/all/{userId}")
-    public ResponseEntity<List<ExpenseBudget>> getAllExpenseBudget(@PathVariable int userId) {
+    @GetMapping(ApiEndpoints.API_RESTRICTED_DATABASE_EXPENSEBUDGET + "/certainMonthYear/{month}/{year}/{userId}")
+    public ResponseEntity<List<ExpenseBudget>> getAllExpenseBudgetOfCertainMonthYear(@PathVariable int month, @PathVariable int year, @PathVariable int userId) {
         List<ExpenseBudget> expenseBudgetList = new ArrayList<>();
         try {
-            expenseBudgetList = this.expenseBudgetService.getAllExpenseBudget(userId);
+            expenseBudgetList = this.expenseBudgetService.getAllExpenseBudgetByMonthYear(month, year, userId);
         } catch (DataValueNotFoundException e) {
         }
         if (!CollectionUtils.isEmpty(expenseBudgetList)) {

@@ -100,7 +100,7 @@ public class VideoGenreService {
      */
     @Transactional()
     public boolean deleteByTitle(String genreTitle) {
-        if (genreTitle == null || genreTitle.trim().isBlank()) {
+        if (genreTitle == null || genreTitle.trim().isEmpty()) {
             return false;
         }
         VideoGenre videoGenre = this.getVideoGenreByGenreTitle(genreTitle);

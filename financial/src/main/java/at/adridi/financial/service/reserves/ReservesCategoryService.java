@@ -104,7 +104,7 @@ public class ReservesCategoryService {
      */
     @Transactional()
     public boolean deleteByTitle(String categoryTitle) {
-        if (categoryTitle == null || categoryTitle.trim().isBlank()) {
+        if (categoryTitle == null || categoryTitle.trim().isEmpty()) {
             return false;
         }
 

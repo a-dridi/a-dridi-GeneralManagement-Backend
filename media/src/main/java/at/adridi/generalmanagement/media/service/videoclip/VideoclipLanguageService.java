@@ -101,7 +101,7 @@ public class VideoclipLanguageService {
      */
     @Transactional()
     public boolean deleteByTitle(String languageTitle) {
-        if (languageTitle == null || languageTitle.trim().isBlank()) {
+        if (languageTitle == null || languageTitle.trim().isEmpty()) {
             return false;
         }
 

@@ -523,4 +523,38 @@ public class ExpenseService {
         }
     }
 
+    /**
+     * Get sum of expenses of a certain month and year of an expense category
+     * id. All recurring expenses counted to a monthly basis. Single expenses of
+     * the current month are added as well.
+     *
+     * @param long earningCategoryId
+     * @param month Certain month for one time expenses
+     * @param year Year of the selected month. 
+     * @param userId
+     * @return 0 if it is not available.
+     */
+    public int getCertainMonthExpensesOfExpenseCategory(long expenseCategoryId, int month, int year, int userId) {
+        try {
+            int currentMonthSum = 0;
+            if (month > 0 && year > 0) {
+                currentMonthSum += this.expenseRepository.getSumByCertainTimerangeAndCategoryAndCertainMonthYear(1L, expenseCategoryId, month, year, userId).orElse(0);
+            }
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(2L, userId, expenseCategoryId).orElse(0) * 30;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(3L, userId, expenseCategoryId).orElse(0) * 4;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(4L, userId, expenseCategoryId).orElse(0) * 2;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(5L, userId, expenseCategoryId).orElse(0);
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(6L, userId, expenseCategoryId).orElse(0) / 2;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(7L, userId, expenseCategoryId).orElse(0) / 4;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(8L, userId, expenseCategoryId).orElse(0) / 6;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(9L, userId, expenseCategoryId).orElse(0) / 12;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(10L, userId, expenseCategoryId).orElse(0) / 24;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(11L, userId, expenseCategoryId).orElse(0) / 60;
+            currentMonthSum += this.expenseRepository.getSumExpensesByTimerangeIdExpenseCategoryId(12L, userId, expenseCategoryId).orElse(0);
+            return currentMonthSum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

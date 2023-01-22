@@ -101,7 +101,7 @@ public class BookAvailabilityService {
      */
     @Transactional()
     public boolean deleteByTitle(String availabilityTitle) {
-        if (availabilityTitle == null || availabilityTitle.trim().isBlank()) {
+        if (availabilityTitle == null || availabilityTitle.trim().isEmpty()) {
             return false;
         }
         BookAvailability bookAvailability = this.getBookAvailabilityByAvailabilityTitle(availabilityTitle);

@@ -113,7 +113,7 @@ public class ExpenseTimerangeService {
      */
     @Transactional()
     public boolean deleteByTitle(String timerangeTitle) {
-        if (timerangeTitle == null || timerangeTitle.trim().isBlank()) {
+        if (timerangeTitle == null || timerangeTitle.trim().isEmpty()) {
             return false;
         }
 

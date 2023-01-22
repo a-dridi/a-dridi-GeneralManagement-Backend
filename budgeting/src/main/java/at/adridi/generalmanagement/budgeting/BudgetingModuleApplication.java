@@ -26,7 +26,7 @@ public class BudgetingModuleApplication extends SpringBootServletInitializer {
     
     @Autowired
     public void configureJackson(ObjectMapper objectMapper) {
-        objectMapper.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        objectMapper.setTimeZone(TimeZone.getTimeZone("Etc/GMT-8"));
     }
 
 

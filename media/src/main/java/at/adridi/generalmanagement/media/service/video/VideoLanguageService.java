@@ -100,7 +100,7 @@ public class VideoLanguageService {
      */
     @Transactional()
     public boolean deleteByTitle(String languageTitle) {
-        if (languageTitle == null || languageTitle.trim().isBlank()) {
+        if (languageTitle == null || languageTitle.trim().isEmpty()) {
             return false;
         }
         VideoLanguage videoLanguage = this.getVideoLanguageByLanguageTitle(languageTitle);

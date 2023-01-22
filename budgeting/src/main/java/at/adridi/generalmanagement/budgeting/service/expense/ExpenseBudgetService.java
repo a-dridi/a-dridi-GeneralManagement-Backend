@@ -117,7 +117,7 @@ public class ExpenseBudgetService {
         List<ExpenseBudget> savedExpenseBudget = expenseBudgetRepository.getAllExpenseBudgetList(userId).orElse(new ArrayList<>());
         //ExpenseBudget list with the actual expenses of the current month
         List<ExpenseBudget> generatedExpenseBudget = new ArrayList<>();
-        
+
         if (CollectionUtils.isEmpty(savedExpenseBudget)) {
             throw new DataValueNotFoundException("Expense Budget List could not be loaded!");
         }
@@ -137,6 +137,62 @@ public class ExpenseBudgetService {
             generatedExpenseBudget.add(updatedExpenseBudget);
         }
         return generatedExpenseBudget;
+    }
+
+    /**
+     * Get a List of all saved expense budget with the expenses of the selected
+     * month and year. Throws DataValueNotFoundException if expense budget is
+     * not available.
+     *
+     * @param month Selected Month for expenses
+     * @param year Selected Year for expenses
+     */
+    public List<ExpenseBudget> getAllExpenseBudgetByMonthYear(int month, int year, int userId) {
+        List<ExpenseBudget> savedExpenseBudget = this.expenseBudgetRepository.getAllExpenseBudgetList(userId).orElse(new ArrayList<>());
+
+        //ExpenseBudget list with the actual expenses of the selected month
+        List<ExpenseBudget> generatedExpenseBudget = new ArrayList<>();
+
+        ExpenseBudget totalExpenseBudgetSum = new ExpenseBudget();
+        totalExpenseBudgetSum.setExpenseCategory(new ExpenseCategory());
+        totalExpenseBudgetSum.setCentActualExpenses(0);
+        totalExpenseBudgetSum.setCentBudgetValue(0);
+        totalExpenseBudgetSum.setCentDifference(0);
+
+        if (CollectionUtils.isEmpty(savedExpenseBudget)) {
+            throw new DataValueNotFoundException("Expense Budget List could not be loaded!");
+        }
+        for (ExpenseBudget expenseBudget : savedExpenseBudget) {
+            int monthExpensesOfCategory = this.expenseService.getCertainMonthExpensesOfExpenseCategory(expenseBudget.getExpenseCategory().getExpenseCategoryId(), month, year, userId);
+            ExpenseBudget updatedExpenseBudget = expenseBudget;
+            updatedExpenseBudget.setCentActualExpenses(monthExpensesOfCategory);
+            updatedExpenseBudget.setCentDifference(expenseBudget.getCentBudgetValue() - updatedExpenseBudget.getCentActualExpenses());
+            int difference = updatedExpenseBudget.getCentDifference();
+            if (difference > 0) {
+                updatedExpenseBudget.setS("+");
+            } else if (difference < 0) {
+                updatedExpenseBudget.setS("-");
+            } else {
+                updatedExpenseBudget.setS(" ");
+            }
+            generatedExpenseBudget.add(updatedExpenseBudget);
+            totalExpenseBudgetSum.setCentBudgetValue(totalExpenseBudgetSum.getCentBudgetValue() + expenseBudget.getCentBudgetValue());
+            totalExpenseBudgetSum.setCentActualExpenses(totalExpenseBudgetSum.getCentActualExpenses() + monthExpensesOfCategory);
+        }
+
+        totalExpenseBudgetSum.setCentDifference(totalExpenseBudgetSum.getCentBudgetValue() - totalExpenseBudgetSum.getCentActualExpenses());
+        if (totalExpenseBudgetSum.getCentDifference() > 0) {
+            totalExpenseBudgetSum.setS("+");
+        } else if (totalExpenseBudgetSum.getCentDifference() < 0) {
+            totalExpenseBudgetSum.setS("-");
+        } else {
+            totalExpenseBudgetSum.setS(" ");
+        }
+
+        generatedExpenseBudget.add(totalExpenseBudgetSum);
+
+        return generatedExpenseBudget;
+
     }
 
     /**

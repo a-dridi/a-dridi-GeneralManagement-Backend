@@ -105,7 +105,7 @@ public class ExpenseCategoryService {
      */
     @Transactional()
     public boolean deleteByTitle(String categoryTitle, int userId) {
-        if (categoryTitle == null || categoryTitle.trim().isBlank()) {
+        if (categoryTitle == null || categoryTitle.trim().isEmpty()) {
             return false;
         }
 

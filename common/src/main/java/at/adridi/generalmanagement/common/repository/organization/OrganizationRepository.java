@@ -26,7 +26,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 
     Optional<ArrayList<Organization>> findByOrganizationCategoryAndUserId(OrganizationCategory organizationCategory, int userId);
 
-    @Query(value = "SELECT * FROM Organization WHERE user_id=?1 AND deleted=false", nativeQuery = true)
+    @Query(value = "SELECT * FROM Organization WHERE user_id=?1 AND deleted=false ORDER BY organization_id DESC", nativeQuery = true)
     Optional<ArrayList<Organization>> getAllOrganizationList(int userId);
 
     @Query(value="SELECT * FROM Organization WHERE LOWER(description) ILIKE %?1% AND user_id=?2 AND deleted=false", nativeQuery=true)
